@@ -1,0 +1,86 @@
+{
+    "name": "CW-Dilettant",
+    "short_name": "CW-Dilettant",
+    "description": "Lerne Morsen/Telegrafie (CW) mit dieser App",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#1976D2",
+    "theme_color": "#1976D2",
+    "lang": "de",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "icons/icon-72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["education", "utilities"],
+    "shortcuts": [
+        {
+            "name": "Hören",
+            "short_name": "Hören",
+            "description": "Morse-Zeichen hören und lernen",
+            "url": "/#hoeren",
+            "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Erkennen",
+            "short_name": "Erkennen",
+            "description": "Gehörte Zeichen identifizieren",
+            "url": "/#erkennen",
+            "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Geben",
+            "short_name": "Geben",
+            "description": "Selbst morsen üben",
+            "url": "/#geben",
+            "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+        }
+    ]
+}
