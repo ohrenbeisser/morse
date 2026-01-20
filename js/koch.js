@@ -201,10 +201,10 @@ const Koch = (function() {
 
                 if (onCharChange) onCharChange(char, 'new');
 
-                // Ansage
+                // Ansage (A-Z in Englisch/NATO, Rest in Deutsch)
                 if (announceEnabled) {
-                    const word = Phonetic.get(char, phoneticLang);
-                    await Speaker.speak(word, phoneticLang);
+                    const speech = Phonetic.getForSpeech(char);
+                    await Speaker.speak(speech.word, speech.lang);
                     await Morse.wait(800);
                 }
 
@@ -236,10 +236,10 @@ const Koch = (function() {
 
                 if (onCharChange) onCharChange(char, 'review');
 
-                // Ansage
+                // Ansage (A-Z in Englisch/NATO, Rest in Deutsch)
                 if (announceEnabled) {
-                    const word = Phonetic.get(char, phoneticLang);
-                    await Speaker.speak(word, phoneticLang);
+                    const speech = Phonetic.getForSpeech(char);
+                    await Speaker.speak(speech.word, speech.lang);
                     await Morse.wait(500);
                 }
 
@@ -269,18 +269,34 @@ const Koch = (function() {
 
                 const group = groups[i];
 
-                if (onGroupChange) onGroupChange(group, i + 1, numGroups);
+                // Gruppe initialisieren (leere Anzeige)
+                if (onGroupChange) onGroupChange([], i + 1, numGroups);
                 if (onProgress) onProgress((i + 1) / numGroups);
 
-                // Gruppe ansagen (optional)
+                // Gruppe ansagen (optional) - immer auf Deutsch
                 if (announceGroups && announceEnabled) {
-                    const groupText = phoneticLang === 'de' ? `Gruppe ${i + 1}` : `Group ${i + 1}`;
-                    await Speaker.speak(groupText, phoneticLang);
+                    await Speaker.speak(`Gruppe ${i + 1}`, 'de');
                     await Morse.wait(500);
                 }
 
-                // Gruppe abspielen
-                await Morse.playGroup(group, morseOptions);
+                // Gruppe abspielen - Zeichen einzeln mit Callback nach Abspielen
+                const timing = Morse.calculateTiming(wpm);
+                for (let j = 0; j < group.length; j++) {
+                    if (stopRequested) break;
+
+                    const char = group[j];
+
+                    // Zeichen abspielen
+                    await Morse.playChar(char, morseOptions);
+
+                    // Nach dem Abspielen: Zeichen zur Anzeige hinzufügen
+                    if (onCharChange) onCharChange(char, 'group');
+
+                    // Pause zwischen Zeichen (außer nach letztem)
+                    if (j < group.length - 1) {
+                        await Morse.wait(timing.letterGap);
+                    }
+                }
 
                 // Pause zwischen Gruppen
                 await Morse.wait(2500);

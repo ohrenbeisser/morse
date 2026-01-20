@@ -21,6 +21,9 @@ const App = (function() {
     // Hören-Seite Elemente
     let hoerenElements;
 
+    // Speicher für aktuelle Gruppenzeichen
+    let currentGroupChars = [];
+
     /**
      * Initialisiert die App
      */
@@ -348,7 +351,11 @@ const App = (function() {
         if (!lesson) return;
 
         hoerenElements.lessonNumber.textContent = `Lektion ${lesson.lesson}`;
-        hoerenElements.lessonChars.textContent = lesson.allChars.join(', ');
+
+        // Nur die neuen Zeichen dieser Lektion anzeigen (mit Spans für Hervorhebung)
+        hoerenElements.lessonChars.innerHTML = lesson.newChars
+            .map(char => `<span data-char="${char}">${char}</span>`)
+            .join(', ');
 
         // Navigation Buttons aktivieren/deaktivieren
         hoerenElements.prevLesson.disabled = lesson.lesson <= 1;
@@ -356,6 +363,22 @@ const App = (function() {
 
         // Zeichen-Display zurücksetzen
         resetCharDisplay();
+    }
+
+    /**
+     * Hebt das aktuelle Zeichen in der Lektions-Card hervor
+     * @param {string} char - Das aktuelle Zeichen
+     */
+    function highlightLessonChar(char) {
+        // Alle Hervorhebungen entfernen
+        const spans = hoerenElements.lessonChars.querySelectorAll('span');
+        spans.forEach(span => span.classList.remove('active-char'));
+
+        // Aktuelles Zeichen hervorheben
+        const activeSpan = hoerenElements.lessonChars.querySelector(`span[data-char="${char}"]`);
+        if (activeSpan) {
+            activeSpan.classList.add('active-char');
+        }
     }
 
     /**
@@ -371,6 +394,7 @@ const App = (function() {
         hoerenElements.progressText.textContent = '';
         hoerenElements.groupDisplay.classList.remove('visible');
         hoerenElements.groupChars.textContent = '';
+        currentGroupChars = [];
     }
 
     /**
@@ -460,6 +484,16 @@ const App = (function() {
         hoerenElements.charPhonetic.textContent = Phonetic.get(char, settings.phoneticLang);
         hoerenElements.charDisplay.classList.add('playing');
 
+        // Zeichen in der Lektion-Card hervorheben (nur bei introduce/review)
+        if (type === 'new' || type === 'review') {
+            highlightLessonChar(char);
+        }
+
+        // Bei Gruppen: Zeichen zur Gruppenanzeige hinzufügen
+        if (type === 'group') {
+            addCharToGroupDisplay(char);
+        }
+
         // Animation zurücksetzen nach kurzer Zeit
         setTimeout(() => {
             hoerenElements.charDisplay.classList.remove('playing');
@@ -470,8 +504,19 @@ const App = (function() {
      * Handler für Gruppen-Wechsel
      */
     function handleGroupChange(group, current, total) {
-        hoerenElements.groupChars.textContent = group.join(' ');
+        // Gruppe zurücksetzen (wird leer initialisiert)
+        currentGroupChars = [];
+        hoerenElements.groupChars.textContent = '';
         hoerenElements.progressText.textContent = `Gruppe ${current} / ${total}`;
+    }
+
+    /**
+     * Fügt ein Zeichen zur Gruppenanzeige hinzu
+     * @param {string} char - Das hinzuzufügende Zeichen
+     */
+    function addCharToGroupDisplay(char) {
+        currentGroupChars.push(char);
+        hoerenElements.groupChars.textContent = currentGroupChars.join(' ');
     }
 
     /**

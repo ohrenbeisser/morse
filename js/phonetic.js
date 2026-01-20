@@ -111,6 +111,30 @@ const Phonetic = (function() {
     }
 
     /**
+     * Gibt das phonetische Wort und die Sprache für die Sprachausgabe zurück
+     * A-Z werden immer in Englisch (NATO) angesagt, alles andere in Deutsch
+     * @param {string} char - Das Zeichen
+     * @returns {Object} { word: string, lang: 'en'|'de' }
+     */
+    function getForSpeech(char) {
+        const upperChar = char.toUpperCase();
+
+        // A-Z: NATO-Alphabet in Englisch
+        if (upperChar >= 'A' && upperChar <= 'Z') {
+            return {
+                word: NATO[upperChar],
+                lang: 'en'
+            };
+        }
+
+        // Alles andere (Zahlen, Sonderzeichen): Deutsch
+        return {
+            word: GERMAN[upperChar] || upperChar,
+            lang: 'de'
+        };
+    }
+
+    /**
      * Gibt das gesamte Alphabet zurück
      * @param {string} lang - Sprache ('en' für NATO, 'de' für Deutsch)
      * @returns {Object} Alphabet-Objekt
@@ -131,6 +155,7 @@ const Phonetic = (function() {
     // Public API
     return {
         get,
+        getForSpeech,
         getAlphabet,
         hasChar,
         NATO,

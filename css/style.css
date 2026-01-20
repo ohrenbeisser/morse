@@ -1001,6 +1001,11 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: var(--spacing-xs);
 }
 
+.lesson-chars .active-char {
+    font-weight: 700;
+    color: var(--primary);
+}
+
 /* ========================================
    Hören Page - Character Display
    ======================================== */
@@ -1094,27 +1099,25 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--surface);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-1);
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     margin-bottom: var(--spacing-md);
     display: none;
+    min-height: 80px;
 }
 
 .group-display.visible {
-    display: block;
-}
-
-.group-label {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    margin-right: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .group-chars {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     font-weight: 500;
     color: var(--text-primary);
     font-family: 'Roboto Mono', monospace;
-    letter-spacing: 8px;
+    letter-spacing: 16px;
+    text-align: center;
 }
 
 /* ========================================

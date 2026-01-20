@@ -225,7 +225,7 @@ const Morse = (function() {
             if (stopRequested) break;
             await playChar(char, options);
             if (i < repetitions - 1) {
-                await wait(timing.symbolGap); // Nur minimale Pause
+                await wait(timing.letterGap); // Pause zwischen Zeichen: 3 Einheiten
             }
         }
     }
