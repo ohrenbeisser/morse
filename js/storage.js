@@ -22,8 +22,18 @@ const Storage = (function() {
         special: false,
 
         // Aussprache
-        phoneticLang: 'de',
-        announce: false
+        phoneticLang: 'en',  // 'en' = NATO, 'de' = Deutsch
+        announce: true,
+
+        // Hören-Einstellungen
+        repetitionsWithPause: 3,    // Wiederholungen mit Pause
+        repetitionsNoPause: 3,      // Wiederholungen ohne Pause
+        pauseBetweenReps: 800,      // Pause zwischen Wiederholungen (ms)
+        groupSize: 5,               // Zeichen pro Gruppe
+        numGroups: 10,              // Anzahl Übungsgruppen
+        newCharWeight: 40,          // Gewichtung neues Zeichen (%)
+        endless: false,             // Endlos-Modus
+        announceGroups: false       // Gruppen ansagen
     };
 
     // Standard-Statistik
@@ -32,6 +42,13 @@ const Storage = (function() {
         correctPercent: 0,
         totalChars: 0,
         totalTimeMinutes: 0
+    };
+
+    // Standard Koch-Fortschritt
+    const defaultKoch = {
+        currentLesson: 1,
+        completedLessons: [],
+        lessonStats: {}
     };
 
     /**
@@ -45,7 +62,8 @@ const Storage = (function() {
                 const parsed = JSON.parse(data);
                 return {
                     settings: { ...defaultSettings, ...parsed.settings },
-                    stats: { ...defaultStats, ...parsed.stats }
+                    stats: { ...defaultStats, ...parsed.stats },
+                    koch: { ...defaultKoch, ...parsed.koch }
                 };
             }
         } catch (e) {
@@ -53,7 +71,8 @@ const Storage = (function() {
         }
         return {
             settings: { ...defaultSettings },
-            stats: { ...defaultStats }
+            stats: { ...defaultStats },
+            koch: { ...defaultKoch }
         };
     }
 
@@ -138,12 +157,54 @@ const Storage = (function() {
     }
 
     /**
+     * Lädt den Koch-Fortschritt
+     * @returns {Object} Koch-Daten
+     */
+    function getKoch() {
+        return loadAll().koch;
+    }
+
+    /**
+     * Speichert den Koch-Fortschritt
+     * @param {Object} koch - Koch-Daten
+     */
+    function saveKoch(koch) {
+        const data = loadAll();
+        data.koch = { ...data.koch, ...koch };
+        saveAll(data);
+    }
+
+    /**
+     * Setzt die aktuelle Koch-Lektion
+     * @param {number} lesson - Lektionsnummer
+     */
+    function setKochLesson(lesson) {
+        const koch = getKoch();
+        koch.currentLesson = lesson;
+        saveKoch(koch);
+    }
+
+    /**
+     * Markiert eine Lektion als abgeschlossen
+     * @param {number} lesson - Lektionsnummer
+     */
+    function completeKochLesson(lesson) {
+        const koch = getKoch();
+        if (!koch.completedLessons.includes(lesson)) {
+            koch.completedLessons.push(lesson);
+            koch.completedLessons.sort((a, b) => a - b);
+        }
+        saveKoch(koch);
+    }
+
+    /**
      * Setzt alle Daten auf Standardwerte zurück
      */
     function resetAll() {
         saveAll({
             settings: { ...defaultSettings },
-            stats: { ...defaultStats }
+            stats: { ...defaultStats },
+            koch: { ...defaultKoch }
         });
     }
 
@@ -152,6 +213,13 @@ const Storage = (function() {
      */
     function resetStats() {
         saveStats({ ...defaultStats });
+    }
+
+    /**
+     * Setzt nur den Koch-Fortschritt zurück
+     */
+    function resetKoch() {
+        saveKoch({ ...defaultKoch });
     }
 
     // Public API
@@ -163,9 +231,15 @@ const Storage = (function() {
         getStats,
         saveStats,
         updateStat,
+        getKoch,
+        saveKoch,
+        setKochLesson,
+        completeKochLesson,
         resetAll,
         resetStats,
+        resetKoch,
         defaultSettings,
-        defaultStats
+        defaultStats,
+        defaultKoch
     };
 })();

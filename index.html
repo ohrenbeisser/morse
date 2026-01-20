@@ -142,10 +142,52 @@
             <!-- Hören Page -->
             <section class="page" id="page-hoeren">
                 <div class="page-content">
-                    <div class="placeholder-content">
-                        <span class="material-icons placeholder-icon">headphones</span>
-                        <h2>Hören</h2>
-                        <p>Hier werden die Hör-Übungen integriert.</p>
+                    <!-- Lektionsnavigation -->
+                    <div class="lesson-nav">
+                        <button class="lesson-nav-btn" id="prevLesson" aria-label="Vorherige Lektion">
+                            <span class="material-icons">chevron_left</span>
+                        </button>
+                        <div class="lesson-info">
+                            <span class="lesson-number" id="lessonNumber">Lektion 1</span>
+                            <span class="lesson-chars" id="lessonChars">K, M</span>
+                        </div>
+                        <button class="lesson-nav-btn" id="nextLesson" aria-label="Nächste Lektion">
+                            <span class="material-icons">chevron_right</span>
+                        </button>
+                    </div>
+
+                    <!-- Aktuelles Zeichen Display -->
+                    <div class="char-display" id="charDisplay">
+                        <div class="char-letter" id="charLetter">-</div>
+                        <div class="char-morse" id="charMorse"></div>
+                        <div class="char-phonetic" id="charPhonetic"></div>
+                    </div>
+
+                    <!-- Phase & Progress -->
+                    <div class="phase-info">
+                        <span class="phase-label" id="phaseLabel">Bereit</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText"></span>
+                    </div>
+
+                    <!-- Gruppen-Anzeige -->
+                    <div class="group-display" id="groupDisplay">
+                        <span class="group-label">Gruppe:</span>
+                        <span class="group-chars" id="groupChars"></span>
+                    </div>
+
+                    <!-- Steuerung -->
+                    <div class="controls">
+                        <button class="btn btn-primary btn-large" id="btnStart">
+                            <span class="material-icons">play_arrow</span>
+                            <span>Start</span>
+                        </button>
+                        <button class="btn btn-secondary btn-large" id="btnStop" disabled>
+                            <span class="material-icons">stop</span>
+                            <span>Stop</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -178,8 +220,9 @@
                     <!-- Tabs -->
                     <div class="tabs">
                         <button class="tab active" data-tab="tab-allgemein">Allgemein</button>
-                        <button class="tab" data-tab="tab-cw">CW-Parameter</button>
-                        <button class="tab" data-tab="tab-aussprache">Aussprache</button>
+                        <button class="tab" data-tab="tab-cw">CW</button>
+                        <button class="tab" data-tab="tab-hoeren">Hören</button>
+                        <button class="tab" data-tab="tab-aussprache">Sprache</button>
                     </div>
 
                     <!-- Tab: Allgemein -->
@@ -269,6 +312,91 @@
                         </div>
                     </div>
 
+                    <!-- Tab: Hören -->
+                    <div class="tab-content" id="tab-hoeren">
+                        <div class="settings-group">
+                            <h3 class="settings-title">Wiederholungen</h3>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Mit Pause</span>
+                                    <span class="setting-value" id="repsWithPauseValue">3</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingRepsWithPause" min="1" max="10" value="3">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Ohne Pause</span>
+                                    <span class="setting-value" id="repsNoPauseValue">3</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingRepsNoPause" min="1" max="10" value="3">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Pause zwischen Wdh. (ms)</span>
+                                    <span class="setting-value" id="pauseBetweenValue">800</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingPauseBetween" min="300" max="2000" step="100" value="800">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3 class="settings-title">Übungsgruppen</h3>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Gruppengröße</span>
+                                    <span class="setting-value" id="groupSizeValue">5</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingGroupSize" min="3" max="7" value="5">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Anzahl Gruppen</span>
+                                    <span class="setting-value" id="numGroupsValue">10</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingNumGroups" min="5" max="50" step="5" value="10">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Gewichtung neues Zeichen (%)</span>
+                                    <span class="setting-value" id="newCharWeightValue">40</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingNewCharWeight" min="20" max="60" step="5" value="40">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3 class="settings-title">Modus</h3>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Endlos-Modus</span>
+                                    <span class="setting-desc">Lektion wiederholt sich automatisch</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingEndless">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Gruppen ansagen</span>
+                                    <span class="setting-desc">"Gruppe 1", "Gruppe 2", ...</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingAnnounceGroups">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Tab: Aussprache -->
                     <div class="tab-content" id="tab-aussprache">
                         <div class="settings-group">
@@ -280,18 +408,18 @@
                                     <span class="setting-desc">Buchstabiertafel für gesprochene Zeichen</span>
                                 </div>
                                 <select class="select" id="settingPhoneticLang">
-                                    <option value="de">Deutsch</option>
                                     <option value="en">Englisch (NATO)</option>
+                                    <option value="de">Deutsch</option>
                                 </select>
                             </div>
 
                             <div class="setting-item">
                                 <div class="setting-info">
                                     <span class="setting-label">Zeichen ansagen</span>
-                                    <span class="setting-desc">Zeichen nach dem Morse-Ton aussprechen</span>
+                                    <span class="setting-desc">Zeichen vor dem Morse-Ton aussprechen</span>
                                 </div>
                                 <label class="switch">
-                                    <input type="checkbox" id="settingAnnounce">
+                                    <input type="checkbox" id="settingAnnounce" checked>
                                     <span class="slider"></span>
                                 </label>
                             </div>
@@ -350,6 +478,10 @@
 
     <!-- Scripts -->
     <script src="js/storage.js"></script>
+    <script src="js/phonetic.js"></script>
+    <script src="js/morse.js"></script>
+    <script src="js/speaker.js"></script>
+    <script src="js/koch.js"></script>
     <script src="js/router.js"></script>
     <script src="js/app.js"></script>
 </body>

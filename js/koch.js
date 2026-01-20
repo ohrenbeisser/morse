@@ -1,0 +1,324 @@
+/**
+ * CW-Dilettant - Koch Method Module
+ * 40 Lektionen nach der Koch-Methode
+ */
+
+const Koch = (function() {
+    'use strict';
+
+    // Koch-Zeichenreihenfolge
+    const KOCH_ORDER = [
+        'K', 'M', 'U', 'R', 'E', 'S', 'N', 'A', 'P', 'T',
+        'L', 'W', 'I', '.', 'J', 'Z', '=', 'F', 'O', 'Y',
+        ',', 'V', 'G', '5', '/', 'Q', '9', '2', 'H', '3',
+        '8', 'B', '?', '4', '7', 'C', '1', 'D', '6', '0', 'X'
+    ];
+
+    // Lektionen generieren
+    const LESSONS = [];
+    for (let i = 0; i < KOCH_ORDER.length; i++) {
+        // Lektion 1 hat 2 Zeichen (K, M), danach jeweils 1 neues
+        if (i === 0) {
+            LESSONS.push({
+                lesson: 1,
+                newChars: ['K', 'M'],
+                allChars: ['K', 'M']
+            });
+        } else {
+            LESSONS.push({
+                lesson: i + 1,
+                newChars: [KOCH_ORDER[i]],
+                allChars: KOCH_ORDER.slice(0, i + 1)
+            });
+        }
+    }
+
+    // Übungszustand
+    let currentLesson = 1;
+    let isRunning = false;
+    let stopRequested = false;
+
+    // Callbacks
+    let onPhaseChange = null;
+    let onCharChange = null;
+    let onGroupChange = null;
+    let onProgress = null;
+    let onComplete = null;
+
+    /**
+     * Gibt eine Lektion zurück
+     * @param {number} lessonNumber - Lektionsnummer (1-40)
+     * @returns {Object} Lektionsdaten
+     */
+    function getLesson(lessonNumber) {
+        const index = lessonNumber - 1;
+        if (index >= 0 && index < LESSONS.length) {
+            return LESSONS[index];
+        }
+        return null;
+    }
+
+    /**
+     * Gibt die aktuelle Lektion zurück
+     * @returns {Object}
+     */
+    function getCurrentLesson() {
+        return getLesson(currentLesson);
+    }
+
+    /**
+     * Setzt die aktuelle Lektion
+     * @param {number} lessonNumber
+     */
+    function setCurrentLesson(lessonNumber) {
+        if (lessonNumber >= 1 && lessonNumber <= LESSONS.length) {
+            currentLesson = lessonNumber;
+        }
+    }
+
+    /**
+     * Geht zur nächsten Lektion
+     * @returns {boolean} true wenn erfolgreich
+     */
+    function nextLesson() {
+        if (currentLesson < LESSONS.length) {
+            currentLesson++;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Geht zur vorherigen Lektion
+     * @returns {boolean} true wenn erfolgreich
+     */
+    function prevLesson() {
+        if (currentLesson > 1) {
+            currentLesson--;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Generiert zufällige Gruppen mit Gewichtung des neuen Zeichens
+     * @param {string[]} allChars - Alle verfügbaren Zeichen
+     * @param {string[]} newChars - Neue Zeichen (höhere Gewichtung)
+     * @param {number} groupSize - Größe einer Gruppe
+     * @param {number} numGroups - Anzahl Gruppen
+     * @param {number} newCharWeight - Gewichtung neuer Zeichen (0-1, z.B. 0.4 = 40%)
+     * @returns {string[][]} Array von Gruppen
+     */
+    function generateGroups(allChars, newChars, groupSize, numGroups, newCharWeight = 0.4) {
+        const groups = [];
+        const oldChars = allChars.filter(c => !newChars.includes(c));
+
+        for (let g = 0; g < numGroups; g++) {
+            const group = [];
+            for (let i = 0; i < groupSize; i++) {
+                // Entscheide ob neues oder altes Zeichen
+                if (Math.random() < newCharWeight && newChars.length > 0) {
+                    // Neues Zeichen
+                    const idx = Math.floor(Math.random() * newChars.length);
+                    group.push(newChars[idx]);
+                } else if (oldChars.length > 0) {
+                    // Altes Zeichen
+                    const idx = Math.floor(Math.random() * oldChars.length);
+                    group.push(oldChars[idx]);
+                } else {
+                    // Fallback: neues Zeichen
+                    const idx = Math.floor(Math.random() * newChars.length);
+                    group.push(newChars[idx]);
+                }
+            }
+            groups.push(group);
+        }
+
+        return groups;
+    }
+
+    /**
+     * Führt eine komplette Lektion durch
+     * @param {Object} settings - Einstellungen
+     * @returns {Promise}
+     */
+    async function runLesson(settings) {
+        const lesson = getCurrentLesson();
+        if (!lesson) return;
+
+        isRunning = true;
+        stopRequested = false;
+
+        const {
+            wpm = 20,
+            frequency = 600,
+            repetitionsWithPause = 3,
+            repetitionsNoPause = 3,
+            pauseBetweenReps = 800,
+            groupSize = 5,
+            numGroups = 10,
+            newCharWeight = 0.4,
+            announceEnabled = true,
+            phoneticLang = 'en',
+            announceGroups = false,
+            endless = false
+        } = settings;
+
+        const morseOptions = { wpm, frequency };
+
+        do {
+            // PHASE 1: Neue Zeichen vorstellen
+            if (onPhaseChange) onPhaseChange('introduce', lesson.newChars);
+
+            for (const char of lesson.newChars) {
+                if (stopRequested) break;
+
+                if (onCharChange) onCharChange(char, 'new');
+
+                // Ansage
+                if (announceEnabled) {
+                    const word = Phonetic.get(char, phoneticLang);
+                    await Speaker.speak(word, phoneticLang);
+                    await Morse.wait(800);
+                }
+
+                if (stopRequested) break;
+
+                // Mit Pause abspielen
+                await Morse.playCharWithPause(char, repetitionsWithPause, pauseBetweenReps, morseOptions);
+
+                if (stopRequested) break;
+
+                await Morse.wait(1000);
+
+                // Ohne Pause abspielen
+                await Morse.playCharNoPause(char, repetitionsNoPause, morseOptions);
+
+                await Morse.wait(1500);
+            }
+
+            if (stopRequested) break;
+
+            // PHASE 2: Alle bisherigen Zeichen wiederholen
+            if (onPhaseChange) onPhaseChange('review', lesson.allChars);
+
+            for (const char of lesson.allChars) {
+                if (stopRequested) break;
+
+                // Neue Zeichen überspringen (wurden schon ausführlich behandelt)
+                if (lesson.newChars.includes(char)) continue;
+
+                if (onCharChange) onCharChange(char, 'review');
+
+                // Ansage
+                if (announceEnabled) {
+                    const word = Phonetic.get(char, phoneticLang);
+                    await Speaker.speak(word, phoneticLang);
+                    await Morse.wait(500);
+                }
+
+                if (stopRequested) break;
+
+                // Kurze Wiederholung (2x mit Pause)
+                await Morse.playCharWithPause(char, 2, pauseBetweenReps, morseOptions);
+
+                await Morse.wait(1000);
+            }
+
+            if (stopRequested) break;
+
+            // PHASE 3: Übungsgruppen
+            if (onPhaseChange) onPhaseChange('groups', null);
+
+            const groups = generateGroups(
+                lesson.allChars,
+                lesson.newChars,
+                groupSize,
+                numGroups,
+                newCharWeight
+            );
+
+            for (let i = 0; i < groups.length; i++) {
+                if (stopRequested) break;
+
+                const group = groups[i];
+
+                if (onGroupChange) onGroupChange(group, i + 1, numGroups);
+                if (onProgress) onProgress((i + 1) / numGroups);
+
+                // Gruppe ansagen (optional)
+                if (announceGroups && announceEnabled) {
+                    const groupText = phoneticLang === 'de' ? `Gruppe ${i + 1}` : `Group ${i + 1}`;
+                    await Speaker.speak(groupText, phoneticLang);
+                    await Morse.wait(500);
+                }
+
+                // Gruppe abspielen
+                await Morse.playGroup(group, morseOptions);
+
+                // Pause zwischen Gruppen
+                await Morse.wait(2500);
+            }
+
+            if (onComplete && !stopRequested) onComplete();
+
+        } while (endless && !stopRequested);
+
+        isRunning = false;
+    }
+
+    /**
+     * Stoppt die aktuelle Übung
+     */
+    function stop() {
+        stopRequested = true;
+        Morse.stop();
+        Speaker.stop();
+        isRunning = false;
+    }
+
+    /**
+     * Prüft ob eine Übung läuft
+     * @returns {boolean}
+     */
+    function getIsRunning() {
+        return isRunning;
+    }
+
+    /**
+     * Registriert Event-Callbacks
+     * @param {Object} callbacks
+     */
+    function setCallbacks(callbacks) {
+        if (callbacks.onPhaseChange) onPhaseChange = callbacks.onPhaseChange;
+        if (callbacks.onCharChange) onCharChange = callbacks.onCharChange;
+        if (callbacks.onGroupChange) onGroupChange = callbacks.onGroupChange;
+        if (callbacks.onProgress) onProgress = callbacks.onProgress;
+        if (callbacks.onComplete) onComplete = callbacks.onComplete;
+    }
+
+    /**
+     * Gibt die Gesamtzahl der Lektionen zurück
+     * @returns {number}
+     */
+    function getTotalLessons() {
+        return LESSONS.length;
+    }
+
+    // Public API
+    return {
+        KOCH_ORDER,
+        LESSONS,
+        getLesson,
+        getCurrentLesson,
+        setCurrentLesson,
+        nextLesson,
+        prevLesson,
+        generateGroups,
+        runLesson,
+        stop,
+        isRunning: getIsRunning,
+        setCallbacks,
+        getTotalLessons
+    };
+})();

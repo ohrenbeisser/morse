@@ -935,3 +935,283 @@ h1, h2, h3, h4, h5, h6 {
         padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom));
     }
 }
+
+/* ========================================
+   Hören Page - Lesson Navigation
+   ======================================== */
+
+.lesson-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.lesson-nav-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    transition: background-color var(--transition-fast);
+}
+
+.lesson-nav-btn:hover {
+    background-color: var(--primary-light);
+}
+
+.lesson-nav-btn:active {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.lesson-nav-btn:disabled {
+    color: var(--text-disabled);
+    pointer-events: none;
+}
+
+.lesson-info {
+    text-align: center;
+    flex: 1;
+}
+
+.lesson-number {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.lesson-chars {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-family: 'Roboto Mono', monospace;
+    margin-top: 2px;
+}
+
+/* ========================================
+   Hören Page - Character Display
+   ======================================== */
+
+.char-display {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.char-letter {
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+    font-family: 'Roboto Mono', monospace;
+    transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.char-display.playing .char-letter {
+    transform: scale(1.1);
+    color: var(--accent);
+}
+
+.char-morse {
+    font-size: 2rem;
+    color: var(--text-secondary);
+    font-family: 'Roboto Mono', monospace;
+    margin-top: var(--spacing-sm);
+    letter-spacing: 4px;
+    min-height: 2.5rem;
+}
+
+.char-phonetic {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+    font-style: italic;
+    min-height: 1.75rem;
+}
+
+/* ========================================
+   Hören Page - Phase Info & Progress
+   ======================================== */
+
+.phase-info {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.phase-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: var(--divider);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xs);
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--primary);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-normal);
+    width: 0%;
+}
+
+.progress-text {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+/* ========================================
+   Hören Page - Group Display
+   ======================================== */
+
+.group-display {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    display: none;
+}
+
+.group-display.visible {
+    display: block;
+}
+
+.group-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-right: var(--spacing-sm);
+}
+
+.group-chars {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: 'Roboto Mono', monospace;
+    letter-spacing: 8px;
+}
+
+/* ========================================
+   Hören Page - Controls
+   ======================================== */
+
+.controls {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    margin-top: var(--spacing-lg);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.btn-large {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    font-size: 1.125rem;
+    min-width: 140px;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--on-primary);
+    box-shadow: var(--shadow-1);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    box-shadow: var(--shadow-2);
+}
+
+.btn-primary:active {
+    box-shadow: var(--shadow-1);
+}
+
+.btn-primary:disabled {
+    background-color: var(--text-disabled);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: var(--surface);
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--primary-light);
+}
+
+.btn-secondary:active {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.btn-secondary:disabled {
+    color: var(--text-disabled);
+    border-color: var(--text-disabled);
+    cursor: not-allowed;
+}
+
+.btn-secondary:disabled:hover {
+    background-color: var(--surface);
+}
+
+/* ========================================
+   Responsive - Tabs (smaller screens)
+   ======================================== */
+
+@media (max-width: 400px) {
+    .tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab {
+        flex: 1 1 50%;
+        font-size: 0.75rem;
+        padding: var(--spacing-sm);
+    }
+}

@@ -15,6 +15,9 @@ const App = (function() {
     let tabs;
     let settingInputs;
 
+    // Hören-Seite Elemente
+    let hoerenElements;
+
     /**
      * Initialisiert die App
      */
@@ -34,6 +37,9 @@ const App = (function() {
         // Statistik anzeigen
         updateStatsDisplay();
 
+        // Hören-Modul initialisieren
+        initHoeren();
+
         // Service Worker registrieren
         registerServiceWorker();
 
@@ -50,16 +56,49 @@ const App = (function() {
         navItems = document.querySelectorAll('.nav-item');
         actionCards = document.querySelectorAll('.action-card');
         tabs = document.querySelectorAll('.tab');
+
+        // Einstellungs-Elemente
         settingInputs = {
+            // Allgemein
             darkMode: document.getElementById('settingDarkMode'),
+            // CW-Parameter
             wpm: document.getElementById('settingWpm'),
             effWpm: document.getElementById('settingEffWpm'),
             frequency: document.getElementById('settingFreq'),
             letters: document.getElementById('settingLetters'),
             numbers: document.getElementById('settingNumbers'),
             special: document.getElementById('settingSpecial'),
+            // Aussprache
             phoneticLang: document.getElementById('settingPhoneticLang'),
-            announce: document.getElementById('settingAnnounce')
+            announce: document.getElementById('settingAnnounce'),
+            // Hören
+            repsWithPause: document.getElementById('settingRepsWithPause'),
+            repsNoPause: document.getElementById('settingRepsNoPause'),
+            pauseBetween: document.getElementById('settingPauseBetween'),
+            groupSize: document.getElementById('settingGroupSize'),
+            numGroups: document.getElementById('settingNumGroups'),
+            newCharWeight: document.getElementById('settingNewCharWeight'),
+            endless: document.getElementById('settingEndless'),
+            announceGroups: document.getElementById('settingAnnounceGroups')
+        };
+
+        // Hören-Seite Elemente
+        hoerenElements = {
+            prevLesson: document.getElementById('prevLesson'),
+            nextLesson: document.getElementById('nextLesson'),
+            lessonNumber: document.getElementById('lessonNumber'),
+            lessonChars: document.getElementById('lessonChars'),
+            charDisplay: document.getElementById('charDisplay'),
+            charLetter: document.getElementById('charLetter'),
+            charMorse: document.getElementById('charMorse'),
+            charPhonetic: document.getElementById('charPhonetic'),
+            phaseLabel: document.getElementById('phaseLabel'),
+            progressFill: document.getElementById('progressFill'),
+            progressText: document.getElementById('progressText'),
+            groupDisplay: document.getElementById('groupDisplay'),
+            groupChars: document.getElementById('groupChars'),
+            btnStart: document.getElementById('btnStart'),
+            btnStop: document.getElementById('btnStop')
         };
     }
 
@@ -99,10 +138,19 @@ const App = (function() {
         // Einstellungen Event Listener
         bindSettingsEvents();
 
+        // Hören Event Listener
+        bindHoerenEvents();
+
         // Keyboard Navigation für Drawer
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && navDrawer.classList.contains('open')) {
-                closeDrawer();
+            if (e.key === 'Escape') {
+                if (navDrawer.classList.contains('open')) {
+                    closeDrawer();
+                }
+                // Stop bei Escape auf Hören-Seite
+                if (Koch.isRunning()) {
+                    stopHoeren();
+                }
             }
         });
 
@@ -187,6 +235,243 @@ const App = (function() {
         settingInputs.announce.addEventListener('change', (e) => {
             Storage.saveSetting('announce', e.target.checked);
         });
+
+        // Hören-Einstellungen
+        settingInputs.repsWithPause.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('repsWithPauseValue').textContent = value;
+            Storage.saveSetting('repetitionsWithPause', value);
+        });
+
+        settingInputs.repsNoPause.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('repsNoPauseValue').textContent = value;
+            Storage.saveSetting('repetitionsNoPause', value);
+        });
+
+        settingInputs.pauseBetween.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('pauseBetweenValue').textContent = value;
+            Storage.saveSetting('pauseBetweenReps', value);
+        });
+
+        settingInputs.groupSize.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('groupSizeValue').textContent = value;
+            Storage.saveSetting('groupSize', value);
+        });
+
+        settingInputs.numGroups.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('numGroupsValue').textContent = value;
+            Storage.saveSetting('numGroups', value);
+        });
+
+        settingInputs.newCharWeight.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('newCharWeightValue').textContent = value;
+            Storage.saveSetting('newCharWeight', value);
+        });
+
+        settingInputs.endless.addEventListener('change', (e) => {
+            Storage.saveSetting('endless', e.target.checked);
+        });
+
+        settingInputs.announceGroups.addEventListener('change', (e) => {
+            Storage.saveSetting('announceGroups', e.target.checked);
+        });
+    }
+
+    /**
+     * Bindet Event Listener für Hören-Seite
+     */
+    function bindHoerenEvents() {
+        // Lektion Navigation
+        hoerenElements.prevLesson.addEventListener('click', () => {
+            if (Koch.prevLesson()) {
+                updateLessonDisplay();
+                Storage.setKochLesson(Koch.getCurrentLesson().lesson);
+            }
+        });
+
+        hoerenElements.nextLesson.addEventListener('click', () => {
+            if (Koch.nextLesson()) {
+                updateLessonDisplay();
+                Storage.setKochLesson(Koch.getCurrentLesson().lesson);
+            }
+        });
+
+        // Start/Stop Buttons
+        hoerenElements.btnStart.addEventListener('click', startHoeren);
+        hoerenElements.btnStop.addEventListener('click', stopHoeren);
+    }
+
+    /**
+     * Initialisiert das Hören-Modul
+     */
+    function initHoeren() {
+        // Gespeicherte Lektion laden
+        const kochData = Storage.getKoch();
+        Koch.setCurrentLesson(kochData.currentLesson);
+
+        // Callbacks für Koch-Modul setzen
+        Koch.setCallbacks({
+            onPhaseChange: handlePhaseChange,
+            onCharChange: handleCharChange,
+            onGroupChange: handleGroupChange,
+            onProgress: handleProgress,
+            onComplete: handleComplete
+        });
+
+        // Initiale Anzeige aktualisieren
+        updateLessonDisplay();
+    }
+
+    /**
+     * Aktualisiert die Lektionsanzeige
+     */
+    function updateLessonDisplay() {
+        const lesson = Koch.getCurrentLesson();
+        if (!lesson) return;
+
+        hoerenElements.lessonNumber.textContent = `Lektion ${lesson.lesson}`;
+        hoerenElements.lessonChars.textContent = lesson.allChars.join(', ');
+
+        // Navigation Buttons aktivieren/deaktivieren
+        hoerenElements.prevLesson.disabled = lesson.lesson <= 1;
+        hoerenElements.nextLesson.disabled = lesson.lesson >= Koch.getTotalLessons();
+
+        // Zeichen-Display zurücksetzen
+        resetCharDisplay();
+    }
+
+    /**
+     * Setzt das Zeichen-Display zurück
+     */
+    function resetCharDisplay() {
+        hoerenElements.charLetter.textContent = '-';
+        hoerenElements.charMorse.textContent = '';
+        hoerenElements.charPhonetic.textContent = '';
+        hoerenElements.charDisplay.classList.remove('playing');
+        hoerenElements.phaseLabel.textContent = 'Bereit';
+        hoerenElements.progressFill.style.width = '0%';
+        hoerenElements.progressText.textContent = '';
+        hoerenElements.groupDisplay.classList.remove('visible');
+        hoerenElements.groupChars.textContent = '';
+    }
+
+    /**
+     * Startet die Hör-Übung
+     */
+    async function startHoeren() {
+        // Buttons aktualisieren
+        hoerenElements.btnStart.disabled = true;
+        hoerenElements.btnStop.disabled = false;
+        hoerenElements.prevLesson.disabled = true;
+        hoerenElements.nextLesson.disabled = true;
+
+        // Einstellungen laden
+        const settings = Storage.getSettings();
+
+        // Morse-Modul starten
+        Morse.start();
+
+        // Lektion starten
+        await Koch.runLesson({
+            wpm: settings.wpm,
+            frequency: settings.frequency,
+            repetitionsWithPause: settings.repetitionsWithPause,
+            repetitionsNoPause: settings.repetitionsNoPause,
+            pauseBetweenReps: settings.pauseBetweenReps,
+            groupSize: settings.groupSize,
+            numGroups: settings.numGroups,
+            newCharWeight: settings.newCharWeight / 100,
+            announceEnabled: settings.announce,
+            phoneticLang: settings.phoneticLang,
+            announceGroups: settings.announceGroups,
+            endless: settings.endless
+        });
+
+        // Buttons zurücksetzen
+        hoerenElements.btnStart.disabled = false;
+        hoerenElements.btnStop.disabled = true;
+        updateLessonDisplay();
+    }
+
+    /**
+     * Stoppt die Hör-Übung
+     */
+    function stopHoeren() {
+        Koch.stop();
+
+        // Buttons zurücksetzen
+        hoerenElements.btnStart.disabled = false;
+        hoerenElements.btnStop.disabled = true;
+        updateLessonDisplay();
+    }
+
+    /**
+     * Handler für Phasen-Wechsel
+     */
+    function handlePhaseChange(phase, chars) {
+        const phaseLabels = {
+            'introduce': 'Neue Zeichen',
+            'review': 'Wiederholung',
+            'groups': 'Übungsgruppen'
+        };
+
+        hoerenElements.phaseLabel.textContent = phaseLabels[phase] || phase;
+
+        if (phase === 'groups') {
+            hoerenElements.groupDisplay.classList.add('visible');
+        } else {
+            hoerenElements.groupDisplay.classList.remove('visible');
+        }
+    }
+
+    /**
+     * Handler für Zeichen-Wechsel
+     */
+    function handleCharChange(char, type) {
+        const settings = Storage.getSettings();
+
+        hoerenElements.charLetter.textContent = char;
+        hoerenElements.charMorse.textContent = Morse.getCode(char);
+        hoerenElements.charPhonetic.textContent = Phonetic.get(char, settings.phoneticLang);
+        hoerenElements.charDisplay.classList.add('playing');
+
+        // Animation zurücksetzen nach kurzer Zeit
+        setTimeout(() => {
+            hoerenElements.charDisplay.classList.remove('playing');
+        }, 300);
+    }
+
+    /**
+     * Handler für Gruppen-Wechsel
+     */
+    function handleGroupChange(group, current, total) {
+        hoerenElements.groupChars.textContent = group.join(' ');
+        hoerenElements.progressText.textContent = `Gruppe ${current} / ${total}`;
+    }
+
+    /**
+     * Handler für Fortschritt
+     */
+    function handleProgress(progress) {
+        hoerenElements.progressFill.style.width = `${progress * 100}%`;
+    }
+
+    /**
+     * Handler für Übungs-Ende
+     */
+    function handleComplete() {
+        hoerenElements.phaseLabel.textContent = 'Abgeschlossen';
+        hoerenElements.progressFill.style.width = '100%';
+
+        // Statistik aktualisieren
+        const stats = Storage.getStats();
+        stats.sessions++;
+        Storage.saveStats(stats);
     }
 
     /**
@@ -250,23 +535,20 @@ const App = (function() {
     function loadSettings() {
         const settings = Storage.getSettings();
 
-        // Dark Mode
+        // Allgemein
         settingInputs.darkMode.checked = settings.darkMode;
         setDarkMode(settings.darkMode);
 
-        // WPM
+        // CW-Parameter
         settingInputs.wpm.value = settings.wpm;
         document.getElementById('wpmValue').textContent = settings.wpm;
 
-        // Effektive WPM
         settingInputs.effWpm.value = settings.effWpm;
         document.getElementById('effWpmValue').textContent = settings.effWpm;
 
-        // Frequenz
         settingInputs.frequency.value = settings.frequency;
         document.getElementById('freqValue').textContent = settings.frequency;
 
-        // Zeichensatz
         settingInputs.letters.checked = settings.letters;
         settingInputs.numbers.checked = settings.numbers;
         settingInputs.special.checked = settings.special;
@@ -274,6 +556,28 @@ const App = (function() {
         // Aussprache
         settingInputs.phoneticLang.value = settings.phoneticLang;
         settingInputs.announce.checked = settings.announce;
+
+        // Hören-Einstellungen
+        settingInputs.repsWithPause.value = settings.repetitionsWithPause;
+        document.getElementById('repsWithPauseValue').textContent = settings.repetitionsWithPause;
+
+        settingInputs.repsNoPause.value = settings.repetitionsNoPause;
+        document.getElementById('repsNoPauseValue').textContent = settings.repetitionsNoPause;
+
+        settingInputs.pauseBetween.value = settings.pauseBetweenReps;
+        document.getElementById('pauseBetweenValue').textContent = settings.pauseBetweenReps;
+
+        settingInputs.groupSize.value = settings.groupSize;
+        document.getElementById('groupSizeValue').textContent = settings.groupSize;
+
+        settingInputs.numGroups.value = settings.numGroups;
+        document.getElementById('numGroupsValue').textContent = settings.numGroups;
+
+        settingInputs.newCharWeight.value = settings.newCharWeight;
+        document.getElementById('newCharWeightValue').textContent = settings.newCharWeight;
+
+        settingInputs.endless.checked = settings.endless;
+        settingInputs.announceGroups.checked = settings.announceGroups;
     }
 
     /**
@@ -309,7 +613,6 @@ const App = (function() {
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                     console.log('Neues Update verfügbar');
-                                    // Hier könnte man dem User ein Update anbieten
                                 }
                             });
                         });
@@ -327,7 +630,9 @@ const App = (function() {
         openDrawer,
         closeDrawer,
         setDarkMode,
-        updateStatsDisplay
+        updateStatsDisplay,
+        startHoeren,
+        stopHoeren
     };
 })();
 

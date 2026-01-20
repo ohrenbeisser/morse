@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.claude
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies (falls später hinzugefügt)
+node_modules/
+
+# Build (falls später hinzugefügt)
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# Temp
+*.tmp
+*.temp
