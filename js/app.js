@@ -6,6 +6,9 @@
 const App = (function() {
     'use strict';
 
+    // Wake Lock für Display
+    let wakeLock = null;
+
     // DOM Elements
     let menuBtn;
     let navDrawer;
@@ -78,6 +81,7 @@ const App = (function() {
             groupSize: document.getElementById('settingGroupSize'),
             numGroups: document.getElementById('settingNumGroups'),
             newCharWeight: document.getElementById('settingNewCharWeight'),
+            reviewLessons: document.getElementById('settingReviewLessons'),
             endless: document.getElementById('settingEndless'),
             announceGroups: document.getElementById('settingAnnounceGroups')
         };
@@ -180,6 +184,9 @@ const App = (function() {
                 closeDrawer();
             }
         }
+
+        // Wake Lock bei Tab-Wechsel reaktivieren
+        document.addEventListener('visibilitychange', handleVisibilityChange);
     }
 
     /**
@@ -271,6 +278,12 @@ const App = (function() {
             const value = parseInt(e.target.value);
             document.getElementById('newCharWeightValue').textContent = value;
             Storage.saveSetting('newCharWeight', value);
+        });
+
+        settingInputs.reviewLessons.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('reviewLessonsValue').textContent = value;
+            Storage.saveSetting('reviewLessons', value);
         });
 
         settingInputs.endless.addEventListener('change', (e) => {
@@ -370,6 +383,9 @@ const App = (function() {
         hoerenElements.prevLesson.disabled = true;
         hoerenElements.nextLesson.disabled = true;
 
+        // Wake Lock aktivieren (verhindert Bildschirm-Abschaltung)
+        await requestWakeLock();
+
         // Einstellungen laden
         const settings = Storage.getSettings();
 
@@ -386,6 +402,7 @@ const App = (function() {
             groupSize: settings.groupSize,
             numGroups: settings.numGroups,
             newCharWeight: settings.newCharWeight / 100,
+            reviewLessons: settings.reviewLessons,
             announceEnabled: settings.announce,
             phoneticLang: settings.phoneticLang,
             announceGroups: settings.announceGroups,
@@ -401,8 +418,11 @@ const App = (function() {
     /**
      * Stoppt die Hör-Übung
      */
-    function stopHoeren() {
+    async function stopHoeren() {
         Koch.stop();
+
+        // Wake Lock freigeben
+        await releaseWakeLock();
 
         // Buttons zurücksetzen
         hoerenElements.btnStart.disabled = false;
@@ -464,9 +484,12 @@ const App = (function() {
     /**
      * Handler für Übungs-Ende
      */
-    function handleComplete() {
+    async function handleComplete() {
         hoerenElements.phaseLabel.textContent = 'Abgeschlossen';
         hoerenElements.progressFill.style.width = '100%';
+
+        // Wake Lock freigeben
+        await releaseWakeLock();
 
         // Statistik aktualisieren
         const stats = Storage.getStats();
@@ -576,6 +599,9 @@ const App = (function() {
         settingInputs.newCharWeight.value = settings.newCharWeight;
         document.getElementById('newCharWeightValue').textContent = settings.newCharWeight;
 
+        settingInputs.reviewLessons.value = settings.reviewLessons;
+        document.getElementById('reviewLessonsValue').textContent = settings.reviewLessons;
+
         settingInputs.endless.checked = settings.endless;
         settingInputs.announceGroups.checked = settings.announceGroups;
     }
@@ -595,6 +621,51 @@ const App = (function() {
         const minutes = stats.totalTimeMinutes % 60;
         const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
         document.getElementById('statTime').textContent = timeStr || '0m';
+    }
+
+    /**
+     * Fordert einen Wake Lock an, um das Display aktiv zu halten
+     */
+    async function requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock aktiviert');
+
+                // Event Listener für Wake Lock Release
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock freigegeben');
+                });
+            } catch (err) {
+                console.warn('Wake Lock konnte nicht aktiviert werden:', err.message);
+            }
+        } else {
+            console.log('Wake Lock API nicht unterstützt');
+        }
+    }
+
+    /**
+     * Gibt den Wake Lock frei
+     */
+    async function releaseWakeLock() {
+        if (wakeLock !== null) {
+            try {
+                await wakeLock.release();
+                wakeLock = null;
+                console.log('Wake Lock manuell freigegeben');
+            } catch (err) {
+                console.warn('Fehler beim Freigeben des Wake Lock:', err.message);
+            }
+        }
+    }
+
+    /**
+     * Reaktiviert den Wake Lock nach Tab-Wechsel
+     */
+    function handleVisibilityChange() {
+        if (document.visibilityState === 'visible' && Koch.isRunning()) {
+            requestWakeLock();
+        }
     }
 
     /**

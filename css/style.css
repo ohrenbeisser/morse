@@ -947,19 +947,23 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--surface);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-1);
-    padding: var(--spacing-sm);
+    padding: var(--spacing-md);
     margin-bottom: var(--spacing-md);
 }
 
 .lesson-nav-btn {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--primary);
     transition: background-color var(--transition-fast);
+}
+
+.lesson-nav-btn .material-icons {
+    font-size: 32px;
 }
 
 .lesson-nav-btn:hover {
@@ -979,21 +983,22 @@ h1, h2, h3, h4, h5, h6 {
 .lesson-info {
     text-align: center;
     flex: 1;
+    padding: var(--spacing-sm) 0;
 }
 
 .lesson-number {
     display: block;
-    font-size: 1.125rem;
+    font-size: 1.5rem;
     font-weight: 500;
     color: var(--text-primary);
 }
 
 .lesson-chars {
     display: block;
-    font-size: 0.875rem;
+    font-size: 1.125rem;
     color: var(--text-secondary);
     font-family: 'Roboto Mono', monospace;
-    margin-top: 2px;
+    margin-top: var(--spacing-xs);
 }
 
 /* ========================================
@@ -1029,20 +1034,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .char-morse {
-    font-size: 2rem;
-    color: var(--text-secondary);
-    font-family: 'Roboto Mono', monospace;
-    margin-top: var(--spacing-sm);
-    letter-spacing: 4px;
-    min-height: 2.5rem;
+    display: none;
 }
 
 .char-phonetic {
-    font-size: 1.25rem;
-    color: var(--text-secondary);
-    margin-top: var(--spacing-sm);
-    font-style: italic;
-    min-height: 1.75rem;
+    display: none;
 }
 
 /* ========================================

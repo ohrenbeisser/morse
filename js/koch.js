@@ -101,6 +101,28 @@ const Koch = (function() {
     }
 
     /**
+     * Gibt die Zeichen aus den letzten X Lektionen zurück
+     * @param {number} lessonNumber - Aktuelle Lektionsnummer
+     * @param {number} numLessons - Anzahl der Lektionen für Wiederholung
+     * @returns {string[]} Zeichen aus den letzten X Lektionen
+     */
+    function getReviewChars(lessonNumber, numLessons) {
+        // Start-Lektion berechnen (mindestens 1)
+        const startLesson = Math.max(1, lessonNumber - numLessons + 1);
+
+        // Alle Zeichen von startLesson bis lessonNumber sammeln
+        const startIndex = startLesson === 1 ? 0 : startLesson - 1;
+        const endIndex = lessonNumber;
+
+        // Bei Lektion 1 sind es K und M (Index 0 und 1)
+        if (startLesson === 1) {
+            return KOCH_ORDER.slice(0, endIndex);
+        }
+
+        return KOCH_ORDER.slice(startIndex, endIndex);
+    }
+
+    /**
      * Generiert zufällige Gruppen mit Gewichtung des neuen Zeichens
      * @param {string[]} allChars - Alle verfügbaren Zeichen
      * @param {string[]} newChars - Neue Zeichen (höhere Gewichtung)
@@ -158,6 +180,7 @@ const Koch = (function() {
             groupSize = 5,
             numGroups = 10,
             newCharWeight = 0.4,
+            reviewLessons = 5,
             announceEnabled = true,
             phoneticLang = 'en',
             announceGroups = false,
@@ -165,6 +188,9 @@ const Koch = (function() {
         } = settings;
 
         const morseOptions = { wpm, frequency };
+
+        // Zeichen für Wiederholung (nur aus den letzten X Lektionen)
+        const reviewChars = getReviewChars(currentLesson, reviewLessons);
 
         do {
             // PHASE 1: Neue Zeichen vorstellen
@@ -199,10 +225,10 @@ const Koch = (function() {
 
             if (stopRequested) break;
 
-            // PHASE 2: Alle bisherigen Zeichen wiederholen
-            if (onPhaseChange) onPhaseChange('review', lesson.allChars);
+            // PHASE 2: Zeichen aus den letzten X Lektionen wiederholen
+            if (onPhaseChange) onPhaseChange('review', reviewChars);
 
-            for (const char of lesson.allChars) {
+            for (const char of reviewChars) {
                 if (stopRequested) break;
 
                 // Neue Zeichen überspringen (wurden schon ausführlich behandelt)
@@ -227,11 +253,11 @@ const Koch = (function() {
 
             if (stopRequested) break;
 
-            // PHASE 3: Übungsgruppen
+            // PHASE 3: Übungsgruppen (nur mit Zeichen aus den letzten X Lektionen)
             if (onPhaseChange) onPhaseChange('groups', null);
 
             const groups = generateGroups(
-                lesson.allChars,
+                reviewChars,
                 lesson.newChars,
                 groupSize,
                 numGroups,

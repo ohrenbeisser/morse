@@ -2,13 +2,13 @@
     "name": "CW-Dilettant",
     "short_name": "CW-Dilettant",
     "description": "Lerne Morsen/Telegrafie (CW) mit dieser App",
-    "start_url": "/",
+    "start_url": "/cw/index.html",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#1976D2",
     "theme_color": "#1976D2",
     "lang": "de",
-    "scope": "/",
+    "scope": "/cw/",
     "icons": [
         {
             "src": "icons/icon-72.png",

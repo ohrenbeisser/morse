@@ -32,6 +32,7 @@ const Storage = (function() {
         groupSize: 5,               // Zeichen pro Gruppe
         numGroups: 10,              // Anzahl Übungsgruppen
         newCharWeight: 40,          // Gewichtung neues Zeichen (%)
+        reviewLessons: 5,           // Anzahl Lektionen für Wiederholung (3-10)
         endless: false,             // Endlos-Modus
         announceGroups: false       // Gruppen ansagen
     };
