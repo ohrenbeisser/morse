@@ -388,12 +388,12 @@ const Erkennen = (function() {
 
                 const speech = Phonetic.getForSpeech(char);
                 await Speaker.speak(speech.word, speech.lang);
-                await Morse.wait(300);
+                await Morse.wait(100);
             }
 
             // Pause zwischen Gruppen (außer nach letzter)
             if (i < groups.length - 1) {
-                await Morse.wait(1000);
+                await Morse.wait(500);
             }
         }
     }
