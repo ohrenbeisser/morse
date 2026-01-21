@@ -21,8 +21,14 @@ const App = (function() {
     // Hören-Seite Elemente
     let hoerenElements;
 
+    // Erkennen-Seite Elemente
+    let erkennenElements;
+
     // Speicher für aktuelle Gruppenzeichen
     let currentGroupChars = [];
+
+    // Erkennen: Fehleranzahl
+    let erkErrorCount = 0;
 
     /**
      * Initialisiert die App
@@ -45,6 +51,9 @@ const App = (function() {
 
         // Hören-Modul initialisieren
         initHoeren();
+
+        // Erkennen-Modul initialisieren
+        initErkennen();
 
         // Service Worker registrieren
         registerServiceWorker();
@@ -69,7 +78,6 @@ const App = (function() {
             darkMode: document.getElementById('settingDarkMode'),
             // CW-Parameter
             wpm: document.getElementById('settingWpm'),
-            effWpm: document.getElementById('settingEffWpm'),
             frequency: document.getElementById('settingFreq'),
             letters: document.getElementById('settingLetters'),
             numbers: document.getElementById('settingNumbers'),
@@ -83,10 +91,16 @@ const App = (function() {
             pauseBetween: document.getElementById('settingPauseBetween'),
             groupSize: document.getElementById('settingGroupSize'),
             numGroups: document.getElementById('settingNumGroups'),
+            pauseAfterGroup: document.getElementById('settingPauseAfterGroup'),
             newCharWeight: document.getElementById('settingNewCharWeight'),
             reviewLessons: document.getElementById('settingReviewLessons'),
             endless: document.getElementById('settingEndless'),
-            announceGroups: document.getElementById('settingAnnounceGroups')
+            announceGroups: document.getElementById('settingAnnounceGroups'),
+            // Erkennen-Einstellungen
+            erkGroupSize: document.getElementById('settingErkGroupSize'),
+            erkNumGroups: document.getElementById('settingErkNumGroups'),
+            erkPauseAfterGroup: document.getElementById('settingErkPauseAfterGroup'),
+            erkInstantFeedback: document.getElementById('settingErkInstantFeedback')
         };
 
         // Hören-Seite Elemente
@@ -106,6 +120,33 @@ const App = (function() {
             groupChars: document.getElementById('groupChars'),
             btnStart: document.getElementById('btnStart'),
             btnStop: document.getElementById('btnStop')
+        };
+
+        // Erkennen-Seite Elemente
+        erkennenElements = {
+            modeKeyboard: document.getElementById('erkModeKeyboard'),
+            modePaper: document.getElementById('erkModePaper'),
+            prevLesson: document.getElementById('erkPrevLesson'),
+            nextLesson: document.getElementById('erkNextLesson'),
+            lessonNumber: document.getElementById('erkLessonNumber'),
+            lessonChars: document.getElementById('erkLessonChars'),
+            phaseLabel: document.getElementById('erkPhaseLabel'),
+            progressFill: document.getElementById('erkProgressFill'),
+            progressText: document.getElementById('erkProgressText'),
+            keyboardView: document.getElementById('erkKeyboardView'),
+            paperView: document.getElementById('erkPaperView'),
+            input: document.getElementById('erkInput'),
+            inputFeedback: document.getElementById('erkInputFeedback'),
+            solutionDisplay: document.getElementById('erkSolutionDisplay'),
+            solutionGroups: document.getElementById('erkSolutionGroups'),
+            speakSolution: document.getElementById('erkSpeakSolution'),
+            errorContainer: document.getElementById('erkErrorContainer'),
+            errorCount: document.getElementById('erkErrorCount'),
+            errorMinus: document.getElementById('erkErrorMinus'),
+            errorPlus: document.getElementById('erkErrorPlus'),
+            saveErrors: document.getElementById('erkSaveErrors'),
+            btnStart: document.getElementById('erkBtnStart'),
+            btnStop: document.getElementById('erkBtnStop')
         };
     }
 
@@ -148,6 +189,9 @@ const App = (function() {
         // Hören Event Listener
         bindHoerenEvents();
 
+        // Erkennen Event Listener
+        bindErkennenEvents();
+
         // Keyboard Navigation für Drawer
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -157,6 +201,10 @@ const App = (function() {
                 // Stop bei Escape auf Hören-Seite
                 if (Koch.isRunning()) {
                     stopHoeren();
+                }
+                // Stop bei Escape auf Erkennen-Seite
+                if (Erkennen.isRunning()) {
+                    stopErkennen();
                 }
             }
         });
@@ -207,13 +255,6 @@ const App = (function() {
             const value = parseInt(e.target.value);
             document.getElementById('wpmValue').textContent = value;
             Storage.saveSetting('wpm', value);
-        });
-
-        // Effektive WPM Slider
-        settingInputs.effWpm.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-            document.getElementById('effWpmValue').textContent = value;
-            Storage.saveSetting('effWpm', value);
         });
 
         // Frequenz Slider
@@ -277,6 +318,12 @@ const App = (function() {
             Storage.saveSetting('numGroups', value);
         });
 
+        settingInputs.pauseAfterGroup.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('pauseAfterGroupValue').textContent = (value / 1000).toFixed(1);
+            Storage.saveSetting('pauseAfterGroup', value);
+        });
+
         settingInputs.newCharWeight.addEventListener('input', (e) => {
             const value = parseInt(e.target.value);
             document.getElementById('newCharWeightValue').textContent = value;
@@ -295,6 +342,29 @@ const App = (function() {
 
         settingInputs.announceGroups.addEventListener('change', (e) => {
             Storage.saveSetting('announceGroups', e.target.checked);
+        });
+
+        // Erkennen-Einstellungen
+        settingInputs.erkGroupSize.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('erkGroupSizeValue').textContent = value;
+            Storage.saveSetting('erkennenGroupSize', value);
+        });
+
+        settingInputs.erkNumGroups.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('erkNumGroupsValue').textContent = value;
+            Storage.saveSetting('erkennenNumGroups', value);
+        });
+
+        settingInputs.erkPauseAfterGroup.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('erkPauseAfterGroupValue').textContent = (value / 1000).toFixed(1);
+            Storage.saveSetting('erkennenPauseAfterGroup', value);
+        });
+
+        settingInputs.erkInstantFeedback.addEventListener('change', (e) => {
+            Storage.saveSetting('erkennenInstantFeedback', e.target.checked);
         });
     }
 
@@ -425,6 +495,7 @@ const App = (function() {
             pauseBetweenReps: settings.pauseBetweenReps,
             groupSize: settings.groupSize,
             numGroups: settings.numGroups,
+            pauseAfterGroup: settings.pauseAfterGroup,
             newCharWeight: settings.newCharWeight / 100,
             reviewLessons: settings.reviewLessons,
             announceEnabled: settings.announce,
@@ -542,6 +613,399 @@ const App = (function() {
         Storage.saveStats(stats);
     }
 
+    // ========================================
+    // Erkennen-Modul Funktionen
+    // ========================================
+
+    /**
+     * Bindet Event Listener für Erkennen-Seite
+     */
+    function bindErkennenEvents() {
+        // Prüfen ob alle Elemente vorhanden sind
+        if (!erkennenElements || !erkennenElements.modeKeyboard) {
+            console.warn('Erkennen-Elemente nicht gefunden, Events nicht gebunden');
+            return;
+        }
+
+        // Modus-Buttons
+        erkennenElements.modeKeyboard.addEventListener('click', () => {
+            setErkMode('keyboard');
+        });
+
+        erkennenElements.modePaper.addEventListener('click', () => {
+            setErkMode('paper');
+        });
+
+        // Lektion Navigation
+        erkennenElements.prevLesson.addEventListener('click', () => {
+            if (Erkennen.prevLesson()) {
+                updateErkLessonDisplay();
+                Storage.setErkennenLesson(Erkennen.getCurrentLesson());
+            }
+        });
+
+        erkennenElements.nextLesson.addEventListener('click', () => {
+            if (Erkennen.nextLesson()) {
+                updateErkLessonDisplay();
+                Storage.setErkennenLesson(Erkennen.getCurrentLesson());
+            }
+        });
+
+        // Start/Stop Buttons
+        erkennenElements.btnStart.addEventListener('click', startErkennen);
+        erkennenElements.btnStop.addEventListener('click', stopErkennen);
+
+        // Eingabefeld - Enter zum Absenden
+        erkennenElements.input.addEventListener('keydown', handleErkInputKeydown);
+
+        // Papier-Modus: Lösung ansagen
+        erkennenElements.speakSolution.addEventListener('click', async () => {
+            erkennenElements.speakSolution.disabled = true;
+            await Erkennen.speakSolution();
+            erkennenElements.speakSolution.disabled = false;
+        });
+
+        // Papier-Modus: Fehleranzahl
+        erkennenElements.errorMinus.addEventListener('click', () => {
+            if (erkErrorCount > 0) {
+                erkErrorCount--;
+                erkennenElements.errorCount.textContent = erkErrorCount;
+            }
+        });
+
+        erkennenElements.errorPlus.addEventListener('click', () => {
+            erkErrorCount++;
+            erkennenElements.errorCount.textContent = erkErrorCount;
+        });
+
+        // Papier-Modus: Fehler speichern
+        erkennenElements.saveErrors.addEventListener('click', submitErkErrors);
+    }
+
+    /**
+     * Initialisiert das Erkennen-Modul
+     */
+    function initErkennen() {
+        // Prüfen ob alle Elemente vorhanden sind
+        if (!erkennenElements || !erkennenElements.lessonNumber) {
+            console.warn('Erkennen-Elemente nicht gefunden');
+            return;
+        }
+
+        // Gespeicherte Lektion und Modus laden
+        const erkennenLesson = Storage.getErkennenLesson();
+        Erkennen.setCurrentLesson(erkennenLesson);
+
+        const settings = Storage.getSettings();
+        Erkennen.setMode(settings.erkennenMode || 'keyboard');
+
+        // Callbacks für Erkennen-Modul setzen
+        Erkennen.setCallbacks({
+            onGroupStart: handleErkGroupStart,
+            onGroupEnd: handleErkGroupEnd,
+            onProgress: handleErkProgress,
+            onComplete: handleErkComplete,
+            onAllGroupsPlayed: handleErkAllGroupsPlayed,
+            onCharPlayed: handleErkCharPlayed
+        });
+
+        // Initiale Anzeige aktualisieren
+        updateErkLessonDisplay();
+        updateErkModeView();
+
+        console.log('Erkennen-Modul initialisiert');
+    }
+
+    /**
+     * Setzt den Erkennen-Modus
+     * @param {string} mode - 'keyboard' oder 'paper'
+     */
+    function setErkMode(mode) {
+        Erkennen.setMode(mode);
+        Storage.saveSetting('erkennenMode', mode);
+        updateErkModeView();
+    }
+
+    /**
+     * Aktualisiert die Modus-Ansicht
+     */
+    function updateErkModeView() {
+        const mode = Erkennen.getMode();
+
+        // Buttons aktualisieren
+        if (mode === 'keyboard') {
+            erkennenElements.modeKeyboard.classList.add('active');
+            erkennenElements.modePaper.classList.remove('active');
+            erkennenElements.keyboardView.classList.remove('hidden');
+            erkennenElements.paperView.classList.add('hidden');
+        } else {
+            erkennenElements.modeKeyboard.classList.remove('active');
+            erkennenElements.modePaper.classList.add('active');
+            erkennenElements.keyboardView.classList.add('hidden');
+            erkennenElements.paperView.classList.remove('hidden');
+        }
+
+        // Papier-Modus UI zurücksetzen
+        erkennenElements.solutionDisplay.classList.remove('visible');
+        erkennenElements.errorContainer.classList.remove('visible');
+    }
+
+    /**
+     * Aktualisiert die Lektionsanzeige für Erkennen
+     */
+    function updateErkLessonDisplay() {
+        const lesson = Erkennen.getLessonData();
+        if (!lesson) return;
+
+        erkennenElements.lessonNumber.textContent = `Lektion ${lesson.lesson}`;
+        erkennenElements.lessonChars.innerHTML = lesson.newChars
+            .map(char => `<span data-char="${char}">${char}</span>`)
+            .join(', ');
+
+        // Navigation Buttons aktivieren/deaktivieren
+        erkennenElements.prevLesson.disabled = lesson.lesson <= 1;
+        erkennenElements.nextLesson.disabled = lesson.lesson >= Koch.getTotalLessons();
+
+        // UI zurücksetzen
+        resetErkDisplay();
+    }
+
+    /**
+     * Setzt die Erkennen-Anzeige zurück
+     */
+    function resetErkDisplay() {
+        erkennenElements.phaseLabel.textContent = 'Bereit';
+        erkennenElements.progressFill.style.width = '0%';
+        erkennenElements.progressText.textContent = '';
+        erkennenElements.input.value = '';
+        erkennenElements.inputFeedback.textContent = '';
+        erkennenElements.inputFeedback.className = 'input-feedback';
+        erkennenElements.solutionDisplay.classList.remove('visible');
+        erkennenElements.errorContainer.classList.remove('visible');
+        erkErrorCount = 0;
+        erkennenElements.errorCount.textContent = '0';
+    }
+
+    /**
+     * Startet die Erkennen-Übung
+     */
+    async function startErkennen() {
+        // UI aktualisieren
+        erkennenElements.btnStart.disabled = true;
+        erkennenElements.btnStop.disabled = false;
+        erkennenElements.prevLesson.disabled = true;
+        erkennenElements.nextLesson.disabled = true;
+        erkennenElements.modeKeyboard.disabled = true;
+        erkennenElements.modePaper.disabled = true;
+
+        // Wake Lock aktivieren
+        await requestWakeLock();
+
+        // Einstellungen laden
+        const settings = Storage.getSettings();
+
+        // Morse-Modul starten
+        Morse.start();
+
+        const erkSettings = {
+            wpm: settings.wpm,
+            frequency: settings.frequency,
+            groupSize: settings.erkennenGroupSize,
+            numGroups: settings.erkennenNumGroups,
+            pauseAfterGroup: settings.erkennenPauseAfterGroup,
+            newCharWeight: settings.newCharWeight / 100,
+            reviewLessons: settings.reviewLessons,
+            instantFeedback: settings.erkennenInstantFeedback
+        };
+
+        const mode = Erkennen.getMode();
+        if (mode === 'keyboard') {
+            erkennenElements.input.disabled = false;
+            erkennenElements.input.focus();
+            await Erkennen.runKeyboardMode(erkSettings);
+        } else {
+            await Erkennen.runPaperMode(erkSettings);
+        }
+
+        // UI zurücksetzen
+        erkennenElements.btnStart.disabled = false;
+        erkennenElements.btnStop.disabled = true;
+        erkennenElements.modeKeyboard.disabled = false;
+        erkennenElements.modePaper.disabled = false;
+        updateErkLessonDisplay();
+    }
+
+    /**
+     * Stoppt die Erkennen-Übung
+     */
+    async function stopErkennen() {
+        Erkennen.stop();
+
+        // Wake Lock freigeben
+        await releaseWakeLock();
+
+        // UI zurücksetzen
+        erkennenElements.btnStart.disabled = false;
+        erkennenElements.btnStop.disabled = true;
+        erkennenElements.modeKeyboard.disabled = false;
+        erkennenElements.modePaper.disabled = false;
+        erkennenElements.input.disabled = false;
+        updateErkLessonDisplay();
+    }
+
+    /**
+     * Handler für Gruppen-Start (Erkennen)
+     */
+    function handleErkGroupStart(index, total, group) {
+        erkennenElements.phaseLabel.textContent = 'Übungsgruppen';
+        erkennenElements.progressText.textContent = `Gruppe ${index + 1} / ${total}`;
+
+        // Tastatur-Modus: Eingabe leeren
+        if (Erkennen.getMode() === 'keyboard') {
+            erkennenElements.input.value = '';
+            erkennenElements.inputFeedback.textContent = '';
+            erkennenElements.inputFeedback.className = 'input-feedback';
+        }
+    }
+
+    /**
+     * Handler für Zeichen gespielt (Erkennen)
+     */
+    function handleErkCharPlayed(char, index, total) {
+        // Optional: Visuelles Feedback beim Abspielen
+    }
+
+    /**
+     * Handler für Gruppen-Ende (Erkennen) - nur Tastatur-Modus
+     */
+    function handleErkGroupEnd(groupString, userInput, isCorrect) {
+        const settings = Storage.getSettings();
+
+        if (settings.erkennenInstantFeedback) {
+            if (isCorrect) {
+                erkennenElements.inputFeedback.textContent = `✓ Richtig: ${groupString}`;
+                erkennenElements.inputFeedback.className = 'input-feedback correct';
+            } else {
+                erkennenElements.inputFeedback.textContent = `✗ Falsch - Richtig: ${groupString}`;
+                erkennenElements.inputFeedback.className = 'input-feedback incorrect';
+            }
+        }
+    }
+
+    /**
+     * Handler für Fortschritt (Erkennen)
+     */
+    function handleErkProgress(progress) {
+        erkennenElements.progressFill.style.width = `${progress * 100}%`;
+    }
+
+    /**
+     * Handler für Übungs-Ende (Erkennen) - nur Tastatur-Modus
+     */
+    async function handleErkComplete(results) {
+        erkennenElements.phaseLabel.textContent = 'Abgeschlossen';
+        erkennenElements.progressFill.style.width = '100%';
+
+        // Wake Lock freigeben
+        await releaseWakeLock();
+
+        // Statistik speichern
+        saveErkStats(results);
+
+        // Ergebnis anzeigen
+        const correctPercent = results.totalChars > 0
+            ? Math.round((results.correctChars / results.totalChars) * 100)
+            : 0;
+
+        erkennenElements.inputFeedback.textContent =
+            `Ergebnis: ${results.correctGroups}/${results.totalGroups} Gruppen richtig (${correctPercent}%)`;
+        erkennenElements.inputFeedback.className =
+            correctPercent >= 80 ? 'input-feedback correct' : 'input-feedback incorrect';
+    }
+
+    /**
+     * Handler für alle Gruppen gespielt (Papier-Modus)
+     */
+    function handleErkAllGroupsPlayed(groups) {
+        erkennenElements.phaseLabel.textContent = 'Lösung prüfen';
+
+        // Lösung anzeigen
+        erkennenElements.solutionGroups.innerHTML = groups
+            .map((g, i) => `<div class="solution-group">${g.join('')}</div>`)
+            .join('');
+
+        erkennenElements.solutionDisplay.classList.add('visible');
+        erkennenElements.errorContainer.classList.add('visible');
+
+        // Fehleranzahl auf Gesamtzeichen initialisieren (max)
+        const totalChars = groups.reduce((sum, g) => sum + g.length, 0);
+        erkErrorCount = 0;
+        erkennenElements.errorCount.textContent = '0';
+    }
+
+    /**
+     * Handler für Eingabe-Keydown (Erkennen Tastatur-Modus)
+     */
+    function handleErkInputKeydown(e) {
+        if (e.key === 'Enter' && Erkennen.isRunning()) {
+            e.preventDefault();
+            const input = erkennenElements.input.value.trim();
+            Erkennen.submitInput(input);
+        }
+    }
+
+    /**
+     * Speichert Fehler und zeigt Ergebnis (Papier-Modus)
+     */
+    async function submitErkErrors() {
+        const results = Erkennen.calculatePaperResult(erkErrorCount);
+
+        // Statistik speichern
+        saveErkStats(results);
+
+        // Wake Lock freigeben
+        await releaseWakeLock();
+
+        // Ergebnis anzeigen
+        erkennenElements.phaseLabel.textContent =
+            `Ergebnis: ${results.correctPercent}% richtig`;
+
+        // UI zurücksetzen (nach kurzer Verzögerung)
+        setTimeout(() => {
+            erkennenElements.btnStart.disabled = false;
+            erkennenElements.btnStop.disabled = true;
+            erkennenElements.modeKeyboard.disabled = false;
+            erkennenElements.modePaper.disabled = false;
+            updateErkLessonDisplay();
+        }, 2000);
+    }
+
+    /**
+     * Speichert die Erkennen-Statistik
+     * @param {Object} results - Ergebnisse
+     */
+    function saveErkStats(results) {
+        const stats = Storage.getStats();
+        stats.sessions++;
+        stats.totalChars += results.totalChars || 0;
+
+        // Durchschnittliche Trefferquote aktualisieren
+        const correctPercent = results.correctPercent ||
+            (results.totalChars > 0 ? Math.round((results.correctChars / results.totalChars) * 100) : 0);
+
+        if (stats.sessions === 1) {
+            stats.correctPercent = correctPercent;
+        } else {
+            // Gleitender Durchschnitt
+            stats.correctPercent = Math.round(
+                (stats.correctPercent * (stats.sessions - 1) + correctPercent) / stats.sessions
+            );
+        }
+
+        Storage.saveStats(stats);
+        updateStatsDisplay();
+    }
+
     /**
      * Öffnet den Navigation Drawer
      */
@@ -611,9 +1075,6 @@ const App = (function() {
         settingInputs.wpm.value = settings.wpm;
         document.getElementById('wpmValue').textContent = settings.wpm;
 
-        settingInputs.effWpm.value = settings.effWpm;
-        document.getElementById('effWpmValue').textContent = settings.effWpm;
-
         settingInputs.frequency.value = settings.frequency;
         document.getElementById('freqValue').textContent = settings.frequency;
 
@@ -641,6 +1102,9 @@ const App = (function() {
         settingInputs.numGroups.value = settings.numGroups;
         document.getElementById('numGroupsValue').textContent = settings.numGroups;
 
+        settingInputs.pauseAfterGroup.value = settings.pauseAfterGroup;
+        document.getElementById('pauseAfterGroupValue').textContent = (settings.pauseAfterGroup / 1000).toFixed(1);
+
         settingInputs.newCharWeight.value = settings.newCharWeight;
         document.getElementById('newCharWeightValue').textContent = settings.newCharWeight;
 
@@ -649,6 +1113,18 @@ const App = (function() {
 
         settingInputs.endless.checked = settings.endless;
         settingInputs.announceGroups.checked = settings.announceGroups;
+
+        // Erkennen-Einstellungen
+        settingInputs.erkGroupSize.value = settings.erkennenGroupSize;
+        document.getElementById('erkGroupSizeValue').textContent = settings.erkennenGroupSize;
+
+        settingInputs.erkNumGroups.value = settings.erkennenNumGroups;
+        document.getElementById('erkNumGroupsValue').textContent = settings.erkennenNumGroups;
+
+        settingInputs.erkPauseAfterGroup.value = settings.erkennenPauseAfterGroup;
+        document.getElementById('erkPauseAfterGroupValue').textContent = (settings.erkennenPauseAfterGroup / 1000).toFixed(1);
+
+        settingInputs.erkInstantFeedback.checked = settings.erkennenInstantFeedback;
     }
 
     /**
@@ -708,7 +1184,7 @@ const App = (function() {
      * Reaktiviert den Wake Lock nach Tab-Wechsel
      */
     function handleVisibilityChange() {
-        if (document.visibilityState === 'visible' && Koch.isRunning()) {
+        if (document.visibilityState === 'visible' && (Koch.isRunning() || Erkennen.isRunning())) {
             requestWakeLock();
         }
     }

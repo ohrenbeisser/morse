@@ -1214,3 +1214,262 @@ h1, h2, h3, h4, h5, h6 {
         padding: var(--spacing-sm);
     }
 }
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.hidden {
+    display: none !important;
+}
+
+/* ========================================
+   Erkennen Page - Mode Selector
+   ======================================== */
+
+.mode-selector {
+    display: flex;
+    gap: var(--spacing-sm);
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.mode-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.mode-btn:hover {
+    background-color: var(--surface-variant);
+    color: var(--text-primary);
+}
+
+.mode-btn.active {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.mode-btn .material-icons {
+    font-size: 20px;
+}
+
+/* ========================================
+   Erkennen Page - Input Field
+   ======================================== */
+
+.erk-keyboard-view {
+    margin-bottom: var(--spacing-md);
+}
+
+.erk-input-container {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    padding: var(--spacing-md);
+}
+
+.erk-input {
+    width: 100%;
+    padding: var(--spacing-md);
+    font-size: 2rem;
+    font-family: 'Roboto Mono', monospace;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    border: 2px solid var(--divider);
+    border-radius: var(--radius-md);
+    background-color: var(--surface-variant);
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast);
+}
+
+.erk-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.erk-input::placeholder {
+    font-size: 1rem;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--text-hint);
+}
+
+.input-feedback {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    min-height: 36px;
+}
+
+.input-feedback.correct {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+}
+
+.input-feedback.incorrect {
+    background-color: #FFEBEE;
+    color: #C62828;
+}
+
+[data-theme="dark"] .input-feedback.correct {
+    background-color: rgba(46, 125, 50, 0.2);
+    color: #81C784;
+}
+
+[data-theme="dark"] .input-feedback.incorrect {
+    background-color: rgba(198, 40, 40, 0.2);
+    color: #E57373;
+}
+
+/* ========================================
+   Erkennen Page - Paper Mode
+   ======================================== */
+
+.erk-paper-view {
+    margin-bottom: var(--spacing-md);
+}
+
+.solution-display {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    display: none;
+}
+
+.solution-display.visible {
+    display: block;
+}
+
+.solution-display h3 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-md);
+}
+
+.solution-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.solution-group {
+    background-color: var(--surface-variant);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.125rem;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: 4px;
+}
+
+.error-input-container {
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    padding: var(--spacing-md);
+    text-align: center;
+    display: none;
+}
+
+.error-input-container.visible {
+    display: block;
+}
+
+.error-input-container h3 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-md);
+}
+
+.error-input-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.error-count {
+    font-size: 3rem;
+    font-weight: 700;
+    font-family: 'Roboto Mono', monospace;
+    color: var(--primary);
+    min-width: 80px;
+}
+
+/* ========================================
+   Button Variants
+   ======================================== */
+
+.btn-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--surface-variant);
+    color: var(--primary);
+    transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+    background-color: var(--primary-light);
+}
+
+.btn-icon:active {
+    background-color: var(--primary);
+    color: var(--on-primary);
+}
+
+.btn-icon .material-icons {
+    font-size: 28px;
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    transition: all var(--transition-fast);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-light);
+}
+
+.btn-outline .material-icons {
+    font-size: 18px;
+}

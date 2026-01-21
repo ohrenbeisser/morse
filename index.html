@@ -194,10 +194,93 @@
             <!-- Erkennen Page -->
             <section class="page" id="page-erkennen">
                 <div class="page-content">
-                    <div class="placeholder-content">
-                        <span class="material-icons placeholder-icon">quiz</span>
-                        <h2>Erkennen</h2>
-                        <p>Hier werden die Erkennungs-Übungen integriert.</p>
+                    <!-- Modus-Auswahl -->
+                    <div class="mode-selector">
+                        <button class="mode-btn active" id="erkModeKeyboard" data-mode="keyboard">
+                            <span class="material-icons">keyboard</span>
+                            <span>Tastatur</span>
+                        </button>
+                        <button class="mode-btn" id="erkModePaper" data-mode="paper">
+                            <span class="material-icons">edit_note</span>
+                            <span>Papier</span>
+                        </button>
+                    </div>
+
+                    <!-- Lektionsnavigation -->
+                    <div class="lesson-nav">
+                        <button class="lesson-nav-btn" id="erkPrevLesson" aria-label="Vorherige Lektion">
+                            <span class="material-icons">chevron_left</span>
+                        </button>
+                        <div class="lesson-info">
+                            <span class="lesson-number" id="erkLessonNumber">Lektion 1</span>
+                            <span class="lesson-chars" id="erkLessonChars">K, M</span>
+                        </div>
+                        <button class="lesson-nav-btn" id="erkNextLesson" aria-label="Nächste Lektion">
+                            <span class="material-icons">chevron_right</span>
+                        </button>
+                    </div>
+
+                    <!-- Phase & Progress -->
+                    <div class="phase-info">
+                        <span class="phase-label" id="erkPhaseLabel">Bereit</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="erkProgressFill"></div>
+                        </div>
+                        <span class="progress-text" id="erkProgressText"></span>
+                    </div>
+
+                    <!-- Tastatur-Modus: Eingabefeld -->
+                    <div class="erk-keyboard-view" id="erkKeyboardView">
+                        <div class="erk-input-container">
+                            <input type="text"
+                                   class="erk-input"
+                                   id="erkInput"
+                                   placeholder="Gehörtes eingeben..."
+                                   autocomplete="off"
+                                   autocapitalize="characters"
+                                   spellcheck="false">
+                            <div class="input-feedback" id="erkInputFeedback"></div>
+                        </div>
+                    </div>
+
+                    <!-- Papier-Modus: Lösung & Fehler -->
+                    <div class="erk-paper-view hidden" id="erkPaperView">
+                        <div class="solution-display" id="erkSolutionDisplay">
+                            <h3>Lösung</h3>
+                            <div class="solution-groups" id="erkSolutionGroups"></div>
+                            <button class="btn btn-outline" id="erkSpeakSolution">
+                                <span class="material-icons">volume_up</span>
+                                <span>Ansagen</span>
+                            </button>
+                        </div>
+                        <div class="error-input-container" id="erkErrorContainer">
+                            <h3>Fehleranzahl</h3>
+                            <div class="error-input-row">
+                                <button class="btn btn-icon" id="erkErrorMinus">
+                                    <span class="material-icons">remove</span>
+                                </button>
+                                <span class="error-count" id="erkErrorCount">0</span>
+                                <button class="btn btn-icon" id="erkErrorPlus">
+                                    <span class="material-icons">add</span>
+                                </button>
+                            </div>
+                            <button class="btn btn-primary" id="erkSaveErrors">
+                                <span class="material-icons">save</span>
+                                <span>Speichern</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Steuerung -->
+                    <div class="controls">
+                        <button class="btn btn-primary btn-large" id="erkBtnStart">
+                            <span class="material-icons">play_arrow</span>
+                            <span>Start</span>
+                        </button>
+                        <button class="btn btn-secondary btn-large" id="erkBtnStop" disabled>
+                            <span class="material-icons">stop</span>
+                            <span>Stop</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -221,6 +304,7 @@
                         <button class="tab active" data-tab="tab-allgemein">Allgemein</button>
                         <button class="tab" data-tab="tab-cw">CW</button>
                         <button class="tab" data-tab="tab-hoeren">Hören</button>
+                        <button class="tab" data-tab="tab-erkennen">Erkennen</button>
                         <button class="tab" data-tab="tab-aussprache">Sprache</button>
                     </div>
 
@@ -253,14 +337,6 @@
                                     <span class="setting-value" id="wpmValue">20</span>
                                 </div>
                                 <input type="range" class="slider-range" id="settingWpm" min="5" max="40" value="20">
-                            </div>
-
-                            <div class="setting-item vertical">
-                                <div class="setting-info">
-                                    <span class="setting-label">Effektive Geschwindigkeit (WPM)</span>
-                                    <span class="setting-value" id="effWpmValue">15</span>
-                                </div>
-                                <input type="range" class="slider-range" id="settingEffWpm" min="5" max="40" value="15">
                             </div>
                         </div>
 
@@ -362,6 +438,14 @@
 
                             <div class="setting-item vertical">
                                 <div class="setting-info">
+                                    <span class="setting-label">Pause nach Gruppe (s)</span>
+                                    <span class="setting-value" id="pauseAfterGroupValue">2.5</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingPauseAfterGroup" min="1000" max="10000" step="500" value="2500">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
                                     <span class="setting-label">Gewichtung neues Zeichen (%)</span>
                                     <span class="setting-value" id="newCharWeightValue">40</span>
                                 </div>
@@ -398,6 +482,52 @@
                                 </div>
                                 <label class="switch">
                                     <input type="checkbox" id="settingAnnounceGroups">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Erkennen -->
+                    <div class="tab-content" id="tab-erkennen">
+                        <div class="settings-group">
+                            <h3 class="settings-title">Übungsgruppen</h3>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Gruppengröße</span>
+                                    <span class="setting-value" id="erkGroupSizeValue">5</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingErkGroupSize" min="3" max="7" value="5">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Anzahl Gruppen</span>
+                                    <span class="setting-value" id="erkNumGroupsValue">10</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingErkNumGroups" min="5" max="20" value="10">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Pause nach Gruppe (s)</span>
+                                    <span class="setting-value" id="erkPauseAfterGroupValue">2.5</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingErkPauseAfterGroup" min="1000" max="10000" step="500" value="2500">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3 class="settings-title">Tastatur-Modus</h3>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Sofort-Feedback</span>
+                                    <span class="setting-desc">Zeigt Ergebnis nach jeder Gruppe</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingErkInstantFeedback" checked>
                                     <span class="slider"></span>
                                 </label>
                             </div>
@@ -489,6 +619,7 @@
     <script src="js/morse.js"></script>
     <script src="js/speaker.js"></script>
     <script src="js/koch.js"></script>
+    <script src="js/erkennen.js"></script>
     <script src="js/router.js"></script>
     <script src="js/app.js"></script>
 </body>

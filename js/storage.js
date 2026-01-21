@@ -15,7 +15,6 @@ const Storage = (function() {
 
         // CW-Parameter
         wpm: 20,
-        effWpm: 15,
         frequency: 600,
         letters: true,
         numbers: true,
@@ -31,10 +30,18 @@ const Storage = (function() {
         pauseBetweenReps: 800,      // Pause zwischen Wiederholungen (ms)
         groupSize: 5,               // Zeichen pro Gruppe
         numGroups: 10,              // Anzahl Übungsgruppen
+        pauseAfterGroup: 2500,      // Pause nach jeder Gruppe (ms)
         newCharWeight: 40,          // Gewichtung neues Zeichen (%)
         reviewLessons: 5,           // Anzahl Lektionen für Wiederholung (3-10)
         endless: false,             // Endlos-Modus
-        announceGroups: false       // Gruppen ansagen
+        announceGroups: false,      // Gruppen ansagen
+
+        // Erkennen-Einstellungen
+        erkennenGroupSize: 5,           // 3-7
+        erkennenNumGroups: 10,          // 5-20
+        erkennenPauseAfterGroup: 2500,  // ms
+        erkennenInstantFeedback: true,  // Sofort-Feedback (Tastatur)
+        erkennenMode: 'keyboard'        // 'keyboard' | 'paper'
     };
 
     // Standard-Statistik
@@ -49,7 +56,8 @@ const Storage = (function() {
     const defaultKoch = {
         currentLesson: 1,
         completedLessons: [],
-        lessonStats: {}
+        lessonStats: {},
+        erkennenLesson: 1       // Separate Lektion für Erkennen
     };
 
     /**
@@ -199,6 +207,25 @@ const Storage = (function() {
     }
 
     /**
+     * Setzt die Erkennen-Lektion
+     * @param {number} lesson - Lektionsnummer
+     */
+    function setErkennenLesson(lesson) {
+        const koch = getKoch();
+        koch.erkennenLesson = lesson;
+        saveKoch(koch);
+    }
+
+    /**
+     * Gibt die Erkennen-Lektion zurück
+     * @returns {number} Lektionsnummer
+     */
+    function getErkennenLesson() {
+        const koch = getKoch();
+        return koch.erkennenLesson || 1;
+    }
+
+    /**
      * Setzt alle Daten auf Standardwerte zurück
      */
     function resetAll() {
@@ -236,6 +263,8 @@ const Storage = (function() {
         saveKoch,
         setKochLesson,
         completeKochLesson,
+        setErkennenLesson,
+        getErkennenLesson,
         resetAll,
         resetStats,
         resetKoch,

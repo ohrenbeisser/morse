@@ -179,6 +179,7 @@ const Koch = (function() {
             pauseBetweenReps = 800,
             groupSize = 5,
             numGroups = 10,
+            pauseAfterGroup = 2500,
             newCharWeight = 0.4,
             reviewLessons = 5,
             announceEnabled = true,
@@ -299,7 +300,7 @@ const Koch = (function() {
                 }
 
                 // Pause zwischen Gruppen
-                await Morse.wait(2500);
+                await Morse.wait(pauseAfterGroup);
             }
 
             if (onComplete && !stopRequested) onComplete();
@@ -356,6 +357,7 @@ const Koch = (function() {
         setCurrentLesson,
         nextLesson,
         prevLesson,
+        getReviewChars,
         generateGroups,
         runLesson,
         stop,
