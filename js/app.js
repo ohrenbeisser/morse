@@ -24,6 +24,15 @@ const App = (function() {
     // Erkennen-Seite Elemente
     let erkennenElements;
 
+    // Geben-Seite Elemente
+    let gebenElements;
+
+    // Geben: Eingegebener Text
+    let gebenOutputText = '';
+
+    // Geben: Ton aktiviert
+    let gebenToneEnabled = true;
+
     // Speicher für aktuelle Gruppenzeichen
     let currentGroupChars = [];
 
@@ -54,6 +63,9 @@ const App = (function() {
 
         // Erkennen-Modul initialisieren
         initErkennen();
+
+        // Geben-Modul initialisieren
+        initGeben();
 
         // Service Worker registrieren
         registerServiceWorker();
@@ -154,6 +166,17 @@ const App = (function() {
             btnStart: document.getElementById('erkBtnStart'),
             btnStop: document.getElementById('erkBtnStop')
         };
+
+        // Geben-Seite Elemente
+        gebenElements = {
+            sequence: document.getElementById('gebenSequence'),
+            char: document.getElementById('gebenChar'),
+            output: document.getElementById('gebenOutput'),
+            clearBtn: document.getElementById('gebenClear'),
+            toneToggle: document.getElementById('gebenToneToggle'),
+            btnStart: document.getElementById('gebenBtnStart'),
+            btnStop: document.getElementById('gebenBtnStop')
+        };
     }
 
     /**
@@ -198,6 +221,9 @@ const App = (function() {
         // Erkennen Event Listener
         bindErkennenEvents();
 
+        // Geben Event Listener
+        bindGebenEvents();
+
         // Keyboard Navigation für Drawer
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -211,6 +237,10 @@ const App = (function() {
                 // Stop bei Escape auf Erkennen-Seite
                 if (Erkennen.isRunning()) {
                     stopErkennen();
+                }
+                // Stop bei Escape auf Geben-Seite
+                if (Geben.isActive()) {
+                    stopGeben();
                 }
             }
         });
@@ -1031,6 +1061,150 @@ const App = (function() {
     function startNewErkRound() {
         resetErkPaperView();
         updateErkLessonDisplay();
+    }
+
+    // ========================================
+    // Geben-Modul Funktionen
+    // ========================================
+
+    /**
+     * Bindet Event Listener für Geben-Seite
+     */
+    function bindGebenEvents() {
+        if (!gebenElements || !gebenElements.btnStart) {
+            console.warn('Geben-Elemente nicht gefunden');
+            return;
+        }
+
+        gebenElements.btnStart.addEventListener('click', startGeben);
+        gebenElements.btnStop.addEventListener('click', stopGeben);
+        gebenElements.clearBtn.addEventListener('click', clearGebenOutput);
+        gebenElements.toneToggle.addEventListener('click', toggleGebenTone);
+    }
+
+    /**
+     * Initialisiert das Geben-Modul
+     */
+    function initGeben() {
+        if (!gebenElements || !gebenElements.char) {
+            console.warn('Geben-Elemente nicht gefunden');
+            return;
+        }
+
+        // Callbacks setzen
+        Geben.setCallbacks({
+            onElement: handleGebenElement,
+            onChar: handleGebenChar,
+            onWord: handleGebenWord,
+            onSequence: handleGebenSequence
+        });
+
+        console.log('Geben-Modul initialisiert');
+    }
+
+    /**
+     * Startet das Geben-Modul
+     */
+    async function startGeben() {
+        const settings = Storage.getSettings();
+
+        // Audio-Kontext starten (erfordert User-Interaktion)
+        Morse.start();
+
+        Geben.start({
+            wpm: settings.wpm,
+            frequency: settings.frequency,
+            toneEnabled: gebenToneEnabled
+        });
+
+        // UI aktualisieren
+        gebenElements.btnStart.disabled = true;
+        gebenElements.btnStop.disabled = false;
+        gebenElements.char.textContent = '-';
+        gebenElements.sequence.textContent = '';
+
+        // Wake Lock aktivieren
+        await requestWakeLock();
+    }
+
+    /**
+     * Stoppt das Geben-Modul
+     */
+    async function stopGeben() {
+        Geben.stop();
+
+        // UI aktualisieren
+        gebenElements.btnStart.disabled = false;
+        gebenElements.btnStop.disabled = true;
+
+        // Wake Lock freigeben
+        await releaseWakeLock();
+    }
+
+    /**
+     * Löscht die Geben-Ausgabe
+     */
+    function clearGebenOutput() {
+        gebenOutputText = '';
+        gebenElements.output.textContent = '';
+        gebenElements.char.textContent = '-';
+        gebenElements.sequence.textContent = '';
+    }
+
+    /**
+     * Schaltet den Ton beim Geben ein/aus
+     */
+    function toggleGebenTone() {
+        gebenToneEnabled = !gebenToneEnabled;
+
+        // Button-Darstellung aktualisieren
+        if (gebenToneEnabled) {
+            gebenElements.toneToggle.classList.add('active');
+            gebenElements.toneToggle.querySelector('.material-icons').textContent = 'volume_up';
+        } else {
+            gebenElements.toneToggle.classList.remove('active');
+            gebenElements.toneToggle.querySelector('.material-icons').textContent = 'volume_off';
+        }
+
+        // Falls Geben läuft, Einstellung aktualisieren
+        if (Geben.isActive()) {
+            Geben.setToneEnabled(gebenToneEnabled);
+        }
+    }
+
+    /**
+     * Handler für Dit/Dah erkannt
+     */
+    function handleGebenElement(element, duration) {
+        // Visuelles Feedback
+        gebenElements.char.classList.add('active');
+        setTimeout(() => {
+            gebenElements.char.classList.remove('active');
+        }, 100);
+    }
+
+    /**
+     * Handler für Zeichen dekodiert
+     */
+    function handleGebenChar(char, sequence) {
+        gebenElements.char.textContent = char;
+        gebenOutputText += char;
+        gebenElements.output.textContent = gebenOutputText;
+    }
+
+    /**
+     * Handler für Wort-Pause erkannt
+     */
+    function handleGebenWord() {
+        gebenOutputText += ' ';
+        gebenElements.output.textContent = gebenOutputText;
+    }
+
+    /**
+     * Handler für Sequenz aktualisiert
+     */
+    function handleGebenSequence(sequence) {
+        gebenElements.sequence.textContent = sequence;
     }
 
     /**

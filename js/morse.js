@@ -345,6 +345,7 @@ const Morse = (function() {
         setVolume,
         isPlaying: getIsPlaying,
         isStopped,
-        wait
+        wait,
+        get audioContext() { return audioContext; }
     };
 })();

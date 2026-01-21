@@ -310,10 +310,47 @@
             <!-- Geben Page -->
             <section class="page" id="page-geben">
                 <div class="page-content">
-                    <div class="placeholder-content">
-                        <span class="material-icons placeholder-icon">keyboard</span>
-                        <h2>Geben</h2>
-                        <p>Hier werden die Gebe-Übungen integriert.</p>
+                    <!-- Anleitung -->
+                    <div class="card geben-info">
+                        <div class="card-content">
+                            <p><strong>Leertaste</strong> = Morsetaste</p>
+                            <p>Kurz drücken = Dit (.) &nbsp;|&nbsp; Lang drücken = Dah (-)</p>
+                        </div>
+                    </div>
+
+                    <!-- Ton-Toggle -->
+                    <div class="geben-tone-toggle">
+                        <button class="btn btn-icon-toggle active" id="gebenToneToggle" title="Ton ein/aus">
+                            <span class="material-icons">volume_up</span>
+                        </button>
+                    </div>
+
+                    <!-- Aktuelle Eingabe -->
+                    <div class="geben-display">
+                        <div class="geben-sequence" id="gebenSequence"></div>
+                        <div class="geben-char" id="gebenChar">-</div>
+                    </div>
+
+                    <!-- Eingegebener Text -->
+                    <div class="geben-output">
+                        <div class="geben-output-label">Eingegebener Text:</div>
+                        <div class="geben-output-text" id="gebenOutput"></div>
+                        <button class="btn btn-outline" id="gebenClear">
+                            <span class="material-icons">backspace</span>
+                            <span>Löschen</span>
+                        </button>
+                    </div>
+
+                    <!-- Steuerung -->
+                    <div class="controls">
+                        <button class="btn btn-primary btn-large" id="gebenBtnStart">
+                            <span class="material-icons">play_arrow</span>
+                            <span>Start</span>
+                        </button>
+                        <button class="btn btn-secondary btn-large" id="gebenBtnStop" disabled>
+                            <span class="material-icons">stop</span>
+                            <span>Stop</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -642,6 +679,7 @@
     <script src="js/speaker.js"></script>
     <script src="js/koch.js"></script>
     <script src="js/erkennen.js"></script>
+    <script src="js/geben.js"></script>
     <script src="js/router.js"></script>
     <script src="js/app.js"></script>
 </body>
