@@ -382,10 +382,6 @@ const Erkennen = (function() {
 
             const group = groups[i];
 
-            // Gruppe ansagen
-            await Speaker.speak(`Gruppe ${i + 1}`, 'de');
-            await Morse.wait(500);
-
             // Zeichen ansagen
             for (const char of group) {
                 if (stopRequested) break;
@@ -395,7 +391,54 @@ const Erkennen = (function() {
                 await Morse.wait(300);
             }
 
-            await Morse.wait(800);
+            // Pause zwischen Gruppen (außer nach letzter)
+            if (i < groups.length - 1) {
+                await Morse.wait(1000);
+            }
+        }
+    }
+
+    /**
+     * Spielt eine einzelne Gruppe ab (Morse-Töne)
+     * @param {number} groupIndex - Index der Gruppe
+     * @param {Object} options - Optionen (wpm, frequency)
+     * @returns {Promise}
+     */
+    async function playGroup(groupIndex, options = {}) {
+        if (groupIndex < 0 || groupIndex >= groups.length) return;
+
+        const group = groups[groupIndex];
+        const { wpm = 20, frequency = 600 } = options;
+        const morseOptions = { wpm, frequency };
+        const timing = Morse.calculateTiming(wpm);
+
+        // Gruppe abspielen
+        for (let j = 0; j < group.length; j++) {
+            const char = group[j];
+            await Morse.playChar(char, morseOptions);
+
+            // Pause zwischen Zeichen (außer nach letztem)
+            if (j < group.length - 1) {
+                await Morse.wait(timing.letterGap);
+            }
+        }
+    }
+
+    /**
+     * Spricht eine einzelne Gruppe mit TTS aus
+     * @param {number} groupIndex - Index der Gruppe
+     * @returns {Promise}
+     */
+    async function speakGroup(groupIndex) {
+        if (groupIndex < 0 || groupIndex >= groups.length) return;
+
+        const group = groups[groupIndex];
+
+        // Zeichen ansagen
+        for (const char of group) {
+            const speech = Phonetic.getForSpeech(char);
+            await Speaker.speak(speech.word, speech.lang);
+            await Morse.wait(300);
         }
     }
 
@@ -451,6 +494,8 @@ const Erkennen = (function() {
         submitInput,
         calculatePaperResult,
         speakSolution,
+        playGroup,
+        speakGroup,
         stop,
         isRunning: getIsRunning,
         setCallbacks

@@ -137,14 +137,20 @@ const App = (function() {
             paperView: document.getElementById('erkPaperView'),
             input: document.getElementById('erkInput'),
             inputFeedback: document.getElementById('erkInputFeedback'),
-            solutionDisplay: document.getElementById('erkSolutionDisplay'),
-            solutionGroups: document.getElementById('erkSolutionGroups'),
+            solutionCard: document.getElementById('erkSolutionCard'),
+            solutionList: document.getElementById('erkSolutionList'),
             speakSolution: document.getElementById('erkSpeakSolution'),
-            errorContainer: document.getElementById('erkErrorContainer'),
+            errorCard: document.getElementById('erkErrorCard'),
             errorCount: document.getElementById('erkErrorCount'),
+            errorStats: document.getElementById('erkErrorStats'),
             errorMinus: document.getElementById('erkErrorMinus'),
             errorPlus: document.getElementById('erkErrorPlus'),
             saveErrors: document.getElementById('erkSaveErrors'),
+            resultCard: document.getElementById('erkResultCard'),
+            resultIcon: document.getElementById('erkResultIcon'),
+            resultPercent: document.getElementById('erkResultPercent'),
+            resultText: document.getElementById('erkResultText'),
+            newRound: document.getElementById('erkNewRound'),
             btnStart: document.getElementById('erkBtnStart'),
             btnStop: document.getElementById('erkBtnStop')
         };
@@ -680,6 +686,9 @@ const App = (function() {
 
         // Papier-Modus: Fehler speichern
         erkennenElements.saveErrors.addEventListener('click', submitErkErrors);
+
+        // Papier-Modus: Neue Runde
+        erkennenElements.newRound.addEventListener('click', startNewErkRound);
     }
 
     /**
@@ -746,8 +755,7 @@ const App = (function() {
         }
 
         // Papier-Modus UI zurücksetzen
-        erkennenElements.solutionDisplay.classList.remove('visible');
-        erkennenElements.errorContainer.classList.remove('visible');
+        resetErkPaperView();
     }
 
     /**
@@ -780,10 +788,20 @@ const App = (function() {
         erkennenElements.input.value = '';
         erkennenElements.inputFeedback.textContent = '';
         erkennenElements.inputFeedback.className = 'input-feedback';
-        erkennenElements.solutionDisplay.classList.remove('visible');
-        erkennenElements.errorContainer.classList.remove('visible');
+        resetErkPaperView();
+    }
+
+    /**
+     * Setzt die Papier-Modus Ansicht zurück
+     */
+    function resetErkPaperView() {
+        erkennenElements.solutionCard.classList.remove('visible');
+        erkennenElements.errorCard.classList.remove('visible');
+        erkennenElements.resultCard.classList.remove('visible');
+        erkennenElements.solutionList.innerHTML = '';
         erkErrorCount = 0;
         erkennenElements.errorCount.textContent = '0';
+        erkennenElements.errorStats.textContent = '';
     }
 
     /**
@@ -823,16 +841,23 @@ const App = (function() {
             erkennenElements.input.disabled = false;
             erkennenElements.input.focus();
             await Erkennen.runKeyboardMode(erkSettings);
+
+            // UI zurücksetzen (nur Tastatur-Modus)
+            erkennenElements.btnStart.disabled = false;
+            erkennenElements.btnStop.disabled = true;
+            erkennenElements.modeKeyboard.disabled = false;
+            erkennenElements.modePaper.disabled = false;
+            updateErkLessonDisplay();
         } else {
             await Erkennen.runPaperMode(erkSettings);
-        }
 
-        // UI zurücksetzen
-        erkennenElements.btnStart.disabled = false;
-        erkennenElements.btnStop.disabled = true;
-        erkennenElements.modeKeyboard.disabled = false;
-        erkennenElements.modePaper.disabled = false;
-        updateErkLessonDisplay();
+            // Im Papier-Modus: Buttons zurücksetzen, aber NICHT die Anzeige
+            // (Lösung und Fehler-Eingabe bleiben sichtbar)
+            erkennenElements.btnStart.disabled = true;
+            erkennenElements.btnStop.disabled = true;
+            erkennenElements.modeKeyboard.disabled = true;
+            erkennenElements.modePaper.disabled = true;
+        }
     }
 
     /**
@@ -927,20 +952,26 @@ const App = (function() {
      * Handler für alle Gruppen gespielt (Papier-Modus)
      */
     function handleErkAllGroupsPlayed(groups) {
-        erkennenElements.phaseLabel.textContent = 'Lösung prüfen';
+        erkennenElements.phaseLabel.textContent = 'Auswertung';
 
-        // Lösung anzeigen
-        erkennenElements.solutionGroups.innerHTML = groups
-            .map((g, i) => `<div class="solution-group">${g.join('')}</div>`)
+        // Lösung anzeigen (alle Gruppen)
+        erkennenElements.solutionList.innerHTML = groups
+            .map((g, i) => `
+                <div class="solution-row">
+                    <span class="solution-number">${i + 1}.</span>
+                    <span class="solution-chars">${g.join('')}</span>
+                </div>
+            `)
             .join('');
 
-        erkennenElements.solutionDisplay.classList.add('visible');
-        erkennenElements.errorContainer.classList.add('visible');
+        erkennenElements.solutionCard.classList.add('visible');
+        erkennenElements.errorCard.classList.add('visible');
 
-        // Fehleranzahl auf Gesamtzeichen initialisieren (max)
+        // Gesamtzeichen berechnen und anzeigen
         const totalChars = groups.reduce((sum, g) => sum + g.length, 0);
         erkErrorCount = 0;
         erkennenElements.errorCount.textContent = '0';
+        erkennenElements.errorStats.textContent = `Gesamt: ${totalChars} Zeichen in ${groups.length} Gruppen`;
     }
 
     /**
@@ -966,18 +997,40 @@ const App = (function() {
         // Wake Lock freigeben
         await releaseWakeLock();
 
-        // Ergebnis anzeigen
-        erkennenElements.phaseLabel.textContent =
-            `Ergebnis: ${results.correctPercent}% richtig`;
+        // Ergebnis-Card anzeigen
+        erkennenElements.errorCard.classList.remove('visible');
+        erkennenElements.resultPercent.textContent = results.correctPercent + '%';
+        erkennenElements.resultText.textContent = `${results.correctChars} von ${results.totalChars} Zeichen richtig`;
 
-        // UI zurücksetzen (nach kurzer Verzögerung)
-        setTimeout(() => {
-            erkennenElements.btnStart.disabled = false;
-            erkennenElements.btnStop.disabled = true;
-            erkennenElements.modeKeyboard.disabled = false;
-            erkennenElements.modePaper.disabled = false;
-            updateErkLessonDisplay();
-        }, 2000);
+        // Icon und Styling basierend auf Ergebnis
+        erkennenElements.resultCard.classList.remove('success', 'warning', 'error');
+        if (results.correctPercent >= 90) {
+            erkennenElements.resultIcon.textContent = 'emoji_events';
+            erkennenElements.resultCard.classList.add('success');
+        } else if (results.correctPercent >= 70) {
+            erkennenElements.resultIcon.textContent = 'thumb_up';
+            erkennenElements.resultCard.classList.add('warning');
+        } else {
+            erkennenElements.resultIcon.textContent = 'fitness_center';
+            erkennenElements.resultCard.classList.add('error');
+        }
+
+        erkennenElements.resultCard.classList.add('visible');
+        erkennenElements.phaseLabel.textContent = 'Abgeschlossen';
+
+        // Buttons zurücksetzen
+        erkennenElements.btnStart.disabled = false;
+        erkennenElements.btnStop.disabled = true;
+        erkennenElements.modeKeyboard.disabled = false;
+        erkennenElements.modePaper.disabled = false;
+    }
+
+    /**
+     * Startet eine neue Runde im Papier-Modus
+     */
+    function startNewErkRound() {
+        resetErkPaperView();
+        updateErkLessonDisplay();
     }
 
     /**

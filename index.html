@@ -245,28 +245,50 @@
 
                     <!-- Papier-Modus: Lösung & Fehler -->
                     <div class="erk-paper-view hidden" id="erkPaperView">
-                        <div class="solution-display" id="erkSolutionDisplay">
-                            <h3>Lösung</h3>
-                            <div class="solution-groups" id="erkSolutionGroups"></div>
-                            <button class="btn btn-outline" id="erkSpeakSolution">
-                                <span class="material-icons">volume_up</span>
-                                <span>Ansagen</span>
-                            </button>
+                        <!-- Lösung anzeigen -->
+                        <div class="solution-card" id="erkSolutionCard">
+                            <div class="solution-header">
+                                <h3>Lösung</h3>
+                                <button class="btn btn-icon-small" id="erkSpeakSolution" title="Lösung ansagen">
+                                    <span class="material-icons">volume_up</span>
+                                </button>
+                            </div>
+                            <div class="solution-list" id="erkSolutionList"></div>
                         </div>
-                        <div class="error-input-container" id="erkErrorContainer">
-                            <h3>Fehleranzahl</h3>
+
+                        <!-- Fehler eingeben -->
+                        <div class="error-card" id="erkErrorCard">
+                            <h3>Auswertung</h3>
+                            <p class="error-hint">Vergleiche mit deinen Notizen und zähle die Fehler:</p>
                             <div class="error-input-row">
                                 <button class="btn btn-icon" id="erkErrorMinus">
                                     <span class="material-icons">remove</span>
                                 </button>
-                                <span class="error-count" id="erkErrorCount">0</span>
+                                <div class="error-display">
+                                    <span class="error-count" id="erkErrorCount">0</span>
+                                    <span class="error-label">Fehler</span>
+                                </div>
                                 <button class="btn btn-icon" id="erkErrorPlus">
                                     <span class="material-icons">add</span>
                                 </button>
                             </div>
-                            <button class="btn btn-primary" id="erkSaveErrors">
-                                <span class="material-icons">save</span>
-                                <span>Speichern</span>
+                            <div class="error-stats" id="erkErrorStats"></div>
+                            <button class="btn btn-primary btn-wide" id="erkSaveErrors">
+                                <span class="material-icons">check</span>
+                                <span>Auswertung speichern</span>
+                            </button>
+                        </div>
+
+                        <!-- Ergebnis -->
+                        <div class="result-card hidden" id="erkResultCard">
+                            <div class="result-icon">
+                                <span class="material-icons" id="erkResultIcon">emoji_events</span>
+                            </div>
+                            <div class="result-percent" id="erkResultPercent">0%</div>
+                            <div class="result-text" id="erkResultText">richtig</div>
+                            <button class="btn btn-primary" id="erkNewRound">
+                                <span class="material-icons">replay</span>
+                                <span>Neue Runde</span>
                             </button>
                         </div>
                     </div>
