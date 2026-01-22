@@ -177,7 +177,8 @@ const App = (function() {
             toneToggle: document.getElementById('gebenToneToggle'),
             btnStart: document.getElementById('gebenBtnStart'),
             btnStop: document.getElementById('gebenBtnStop'),
-            scope: document.getElementById('gebenScope')
+            scope: document.getElementById('gebenScope'),
+            touchKey: document.getElementById('gebenTouchKey')
         };
     }
 
@@ -1102,6 +1103,44 @@ const App = (function() {
         gebenElements.btnStop.addEventListener('click', stopGeben);
         gebenElements.clearBtn.addEventListener('click', clearGebenOutput);
         gebenElements.toneToggle.addEventListener('click', toggleGebenTone);
+
+        // Touch-Morsetaste Events
+        if (gebenElements.touchKey) {
+            // Touch-Events
+            gebenElements.touchKey.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                gebenElements.touchKey.classList.add('pressed');
+                Geben.simulateKeyDown();
+            });
+            gebenElements.touchKey.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                gebenElements.touchKey.classList.remove('pressed');
+                Geben.simulateKeyUp();
+            });
+            gebenElements.touchKey.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                gebenElements.touchKey.classList.remove('pressed');
+                Geben.simulateKeyUp();
+            });
+
+            // Mouse-Events (für Desktop-Tests)
+            gebenElements.touchKey.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                gebenElements.touchKey.classList.add('pressed');
+                Geben.simulateKeyDown();
+            });
+            gebenElements.touchKey.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                gebenElements.touchKey.classList.remove('pressed');
+                Geben.simulateKeyUp();
+            });
+            gebenElements.touchKey.addEventListener('mouseleave', () => {
+                if (gebenElements.touchKey.classList.contains('pressed')) {
+                    gebenElements.touchKey.classList.remove('pressed');
+                    Geben.simulateKeyUp();
+                }
+            });
+        }
     }
 
     /**
@@ -1152,6 +1191,7 @@ const App = (function() {
         // UI aktualisieren
         gebenElements.btnStart.disabled = true;
         gebenElements.btnStop.disabled = false;
+        gebenElements.touchKey.disabled = false;
         gebenElements.char.textContent = '-';
         gebenElements.sequence.textContent = '';
 
@@ -1171,6 +1211,8 @@ const App = (function() {
         // UI aktualisieren
         gebenElements.btnStart.disabled = false;
         gebenElements.btnStop.disabled = true;
+        gebenElements.touchKey.disabled = true;
+        gebenElements.touchKey.classList.remove('pressed');
 
         // Wake Lock freigeben
         await releaseWakeLock();

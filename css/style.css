@@ -1678,6 +1678,48 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--accent);
 }
 
+/* Touch-Morsetaste */
+.geben-touch-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--on-primary);
+    background-color: var(--primary);
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                background-color var(--transition-fast);
+}
+
+.geben-touch-key:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.geben-touch-key:not(:disabled):active,
+.geben-touch-key:not(:disabled).pressed {
+    transform: scale(0.98);
+    box-shadow: var(--shadow-1);
+    background-color: var(--accent);
+}
+
+.geben-touch-key .material-icons {
+    font-size: 2rem;
+}
+
 .geben-output {
     background-color: var(--surface);
     border-radius: var(--radius-md);

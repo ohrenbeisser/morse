@@ -324,12 +324,69 @@ const Geben = (function() {
         }
     }
 
+    /**
+     * Simuliert Taste gedrückt (für Touch-Eingabe)
+     */
+    function simulateKeyDown() {
+        if (!isActive) return;
+        if (keyDownTime > 0) return; // Bereits gedrückt
+
+        keyDownTime = performance.now();
+
+        if (letterTimeout) clearTimeout(letterTimeout);
+        if (wordTimeout) clearTimeout(wordTimeout);
+
+        startTone();
+
+        if (callbacks.onKeyDown) callbacks.onKeyDown();
+    }
+
+    /**
+     * Simuliert Taste losgelassen (für Touch-Eingabe)
+     */
+    function simulateKeyUp() {
+        if (!isActive) return;
+        if (keyDownTime === 0) return; // War nicht gedrückt
+
+        const duration = performance.now() - keyDownTime;
+        keyDownTime = 0;
+
+        stopTone();
+
+        if (callbacks.onKeyUp) callbacks.onKeyUp();
+
+        // Dit oder Dah?
+        const timing = calculateTiming(wpm);
+        const element = duration < timing.threshold ? '.' : '-';
+
+        currentSequence += element;
+
+        if (callbacks.onElement) {
+            callbacks.onElement(element, duration);
+        }
+        if (callbacks.onSequence) {
+            callbacks.onSequence(currentSequence);
+        }
+
+        letterTimeout = setTimeout(() => {
+            decodeLetter();
+        }, timing.letterGap);
+
+        wordTimeout = setTimeout(() => {
+            if (callbacks.onWord) {
+                callbacks.onWord();
+            }
+        }, timing.wordGap);
+    }
+
     // Public API
     return {
         start,
         stop,
         setCallbacks,
         setToneEnabled,
+        simulateKeyDown,
+        simulateKeyUp,
         isActive: getIsActive,
         getSequence,
         resetSequence,
