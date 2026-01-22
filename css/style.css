@@ -1645,6 +1645,15 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: var(--spacing-md);
+}
+
+.geben-scope {
+    width: 100%;
+    height: 100px;
+    background-color: var(--surface-variant);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--outline-variant);
 }
 
 .geben-sequence {

@@ -27,7 +27,9 @@ const Geben = (function() {
         onElement: null,      // Dit oder Dah erkannt
         onChar: null,         // Zeichen dekodiert
         onWord: null,         // Wort-Pause erkannt
-        onSequence: null      // Sequenz aktualisiert
+        onSequence: null,     // Sequenz aktualisiert
+        onKeyDown: null,      // Taste gedrückt (für Oszilloskop)
+        onKeyUp: null         // Taste losgelassen (für Oszilloskop)
     };
 
     // Umgekehrte Morse-Tabelle (Code -> Zeichen)
@@ -198,6 +200,9 @@ const Geben = (function() {
 
         // Ton starten
         startTone();
+
+        // Callback für Oszilloskop
+        if (callbacks.onKeyDown) callbacks.onKeyDown();
     }
 
     /**
@@ -218,6 +223,9 @@ const Geben = (function() {
 
         // Ton stoppen
         stopTone();
+
+        // Callback für Oszilloskop
+        if (callbacks.onKeyUp) callbacks.onKeyUp();
 
         // Dit oder Dah?
         const timing = calculateTiming(wpm);
@@ -276,6 +284,8 @@ const Geben = (function() {
         if (cbs.onChar) callbacks.onChar = cbs.onChar;
         if (cbs.onWord) callbacks.onWord = cbs.onWord;
         if (cbs.onSequence) callbacks.onSequence = cbs.onSequence;
+        if (cbs.onKeyDown) callbacks.onKeyDown = cbs.onKeyDown;
+        if (cbs.onKeyUp) callbacks.onKeyUp = cbs.onKeyUp;
     }
 
     /**

@@ -176,7 +176,8 @@ const App = (function() {
             clearBtn: document.getElementById('gebenClear'),
             toneToggle: document.getElementById('gebenToneToggle'),
             btnStart: document.getElementById('gebenBtnStart'),
-            btnStop: document.getElementById('gebenBtnStop')
+            btnStop: document.getElementById('gebenBtnStop'),
+            scope: document.getElementById('gebenScope')
         };
     }
 
@@ -1112,12 +1113,19 @@ const App = (function() {
             return;
         }
 
+        // Oszilloskop initialisieren
+        if (gebenElements.scope) {
+            Scope.init(gebenElements.scope);
+        }
+
         // Callbacks setzen
         Geben.setCallbacks({
             onElement: handleGebenElement,
             onChar: handleGebenChar,
             onWord: handleGebenWord,
-            onSequence: handleGebenSequence
+            onSequence: handleGebenSequence,
+            onKeyDown: () => Scope.setHigh(),
+            onKeyUp: () => Scope.setLow()
         });
 
         console.log('Geben-Modul initialisiert');
@@ -1138,6 +1146,9 @@ const App = (function() {
             toneEnabled: gebenToneEnabled
         });
 
+        // Oszilloskop starten
+        Scope.start();
+
         // UI aktualisieren
         gebenElements.btnStart.disabled = true;
         gebenElements.btnStop.disabled = false;
@@ -1153,6 +1164,9 @@ const App = (function() {
      */
     async function stopGeben() {
         Geben.stop();
+
+        // Oszilloskop stoppen
+        Scope.stop();
 
         // UI aktualisieren
         gebenElements.btnStart.disabled = false;
