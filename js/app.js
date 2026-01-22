@@ -1010,15 +1010,10 @@ const App = (function() {
     function handleErkAllGroupsPlayed(groups) {
         erkennenElements.phaseLabel.textContent = 'Auswertung';
 
-        // Lösung anzeigen (alle Gruppen)
-        erkennenElements.solutionList.innerHTML = groups
-            .map((g, i) => `
-                <div class="solution-row">
-                    <span class="solution-number">${i + 1}.</span>
-                    <span class="solution-chars">${g.join('')}</span>
-                </div>
-            `)
-            .join('');
+        // Lösung anzeigen (alle Gruppen als einfacher Text)
+        erkennenElements.solutionList.textContent = groups
+            .map(g => g.join(''))
+            .join(' ');
 
         erkennenElements.solutionCard.classList.add('visible');
         erkennenElements.errorCard.classList.add('visible');

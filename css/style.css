@@ -1381,34 +1381,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .solution-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.solution-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    background-color: var(--surface-variant);
-    border-radius: var(--radius-sm);
-}
-
-.solution-number {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    min-width: 24px;
-}
-
-.solution-chars {
     font-family: 'Roboto Mono', monospace;
     font-size: 1.25rem;
     font-weight: 500;
-    letter-spacing: 6px;
+    letter-spacing: 4px;
+    word-spacing: 16px;
+    line-height: 2;
     color: var(--text-primary);
-    flex: 1;
+    padding: var(--spacing-md);
+    background-color: var(--surface-variant);
+    border-radius: var(--radius-sm);
+    text-align: center;
 }
 
 /* Error Card */
