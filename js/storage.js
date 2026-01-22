@@ -33,6 +33,7 @@ const Storage = (function() {
         pauseAfterGroup: 2500,      // Pause nach jeder Gruppe (ms)
         newCharWeight: 40,          // Gewichtung neues Zeichen (%)
         reviewLessons: 5,           // Anzahl Lektionen für Wiederholung (3-10)
+        charPauseFactor: 0,         // Zusätzliche Zeichenpause (Faktor 0-5)
         endless: false,             // Endlos-Modus
         announceGroups: false,      // Gruppen ansagen
 

@@ -364,7 +364,6 @@
                         <button class="tab" data-tab="tab-cw">CW</button>
                         <button class="tab" data-tab="tab-hoeren">Hören</button>
                         <button class="tab" data-tab="tab-erkennen">Erkennen</button>
-                        <button class="tab" data-tab="tab-aussprache">Sprache</button>
                     </div>
 
                     <!-- Tab: Allgemein -->
@@ -379,6 +378,32 @@
                                 </div>
                                 <label class="switch">
                                     <input type="checkbox" id="settingDarkMode">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3 class="settings-title">Sprache</h3>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Buchstabiertafel</span>
+                                    <span class="setting-desc">Für gesprochene Zeichen</span>
+                                </div>
+                                <select class="select" id="settingPhoneticLang">
+                                    <option value="en">Englisch (NATO)</option>
+                                    <option value="de">Deutsch</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Zeichen ansagen</span>
+                                    <span class="setting-desc">Zeichen vor dem Morse-Ton aussprechen</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingAnnounce" checked>
                                     <span class="slider"></span>
                                 </label>
                             </div>
@@ -518,6 +543,14 @@
                                 </div>
                                 <input type="range" class="slider-range" id="settingReviewLessons" min="3" max="10" value="5">
                             </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Zusätzliche Zeichenpause (Faktor)</span>
+                                    <span class="setting-value" id="charPauseFactorValue">0</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingCharPauseFactor" min="0" max="5" step="0.5" value="0">
+                            </div>
                         </div>
 
                         <div class="settings-group">
@@ -593,34 +626,6 @@
                         </div>
                     </div>
 
-                    <!-- Tab: Aussprache -->
-                    <div class="tab-content" id="tab-aussprache">
-                        <div class="settings-group">
-                            <h3 class="settings-title">Buchstabier-Alphabet</h3>
-
-                            <div class="setting-item">
-                                <div class="setting-info">
-                                    <span class="setting-label">Sprache für Ansage</span>
-                                    <span class="setting-desc">Buchstabiertafel für gesprochene Zeichen</span>
-                                </div>
-                                <select class="select" id="settingPhoneticLang">
-                                    <option value="en">Englisch (NATO)</option>
-                                    <option value="de">Deutsch</option>
-                                </select>
-                            </div>
-
-                            <div class="setting-item">
-                                <div class="setting-info">
-                                    <span class="setting-label">Zeichen ansagen</span>
-                                    <span class="setting-desc">Zeichen vor dem Morse-Ton aussprechen</span>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="settingAnnounce" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
 

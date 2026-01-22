@@ -106,6 +106,7 @@ const App = (function() {
             pauseAfterGroup: document.getElementById('settingPauseAfterGroup'),
             newCharWeight: document.getElementById('settingNewCharWeight'),
             reviewLessons: document.getElementById('settingReviewLessons'),
+            charPauseFactor: document.getElementById('settingCharPauseFactor'),
             endless: document.getElementById('settingEndless'),
             announceGroups: document.getElementById('settingAnnounceGroups'),
             // Erkennen-Einstellungen
@@ -372,6 +373,12 @@ const App = (function() {
             Storage.saveSetting('reviewLessons', value);
         });
 
+        settingInputs.charPauseFactor.addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('charPauseFactorValue').textContent = value;
+            Storage.saveSetting('charPauseFactor', value);
+        });
+
         settingInputs.endless.addEventListener('change', (e) => {
             Storage.saveSetting('endless', e.target.checked);
         });
@@ -441,6 +448,7 @@ const App = (function() {
             onPhaseChange: handlePhaseChange,
             onCharChange: handleCharChange,
             onGroupChange: handleGroupChange,
+            onGroupStart: handleGroupStart,
             onProgress: handleProgress,
             onComplete: handleComplete
         });
@@ -500,6 +508,7 @@ const App = (function() {
         hoerenElements.progressText.textContent = '';
         hoerenElements.groupDisplay.classList.remove('visible');
         hoerenElements.groupChars.textContent = '';
+        hoerenElements.groupChars.classList.remove('fade-out');
         currentGroupChars = [];
     }
 
@@ -534,6 +543,7 @@ const App = (function() {
             pauseAfterGroup: settings.pauseAfterGroup,
             newCharWeight: settings.newCharWeight / 100,
             reviewLessons: settings.reviewLessons,
+            charPauseFactor: settings.charPauseFactor,
             announceEnabled: settings.announce,
             phoneticLang: settings.phoneticLang,
             announceGroups: settings.announceGroups,
@@ -608,13 +618,29 @@ const App = (function() {
     }
 
     /**
-     * Handler für Gruppen-Wechsel
+     * Handler für Gruppen-Wechsel (wird vor der Ansage aufgerufen)
      */
     function handleGroupChange(group, current, total) {
-        // Gruppe zurücksetzen (wird leer initialisiert)
-        currentGroupChars = [];
-        hoerenElements.groupChars.textContent = '';
+        // Nur Fortschrittstext aktualisieren, Zeichen bleiben sichtbar
         hoerenElements.progressText.textContent = `Gruppe ${current} / ${total}`;
+    }
+
+    /**
+     * Handler für Gruppen-Start (wird nach der Ansage aufgerufen)
+     * Blendet alte Zeichen aus und bereitet neue Gruppe vor
+     */
+    function handleGroupStart(current, total) {
+        const groupChars = hoerenElements.groupChars;
+
+        // Fade-out starten
+        groupChars.classList.add('fade-out');
+
+        // Nach der Animation (500ms) Zeichen löschen
+        setTimeout(() => {
+            currentGroupChars = [];
+            groupChars.textContent = '';
+            groupChars.classList.remove('fade-out');
+        }, 500);
     }
 
     /**
@@ -1337,6 +1363,9 @@ const App = (function() {
 
         settingInputs.reviewLessons.value = settings.reviewLessons;
         document.getElementById('reviewLessonsValue').textContent = settings.reviewLessons;
+
+        settingInputs.charPauseFactor.value = settings.charPauseFactor;
+        document.getElementById('charPauseFactorValue').textContent = settings.charPauseFactor;
 
         settingInputs.endless.checked = settings.endless;
         settingInputs.announceGroups.checked = settings.announceGroups;

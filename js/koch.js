@@ -42,6 +42,7 @@ const Koch = (function() {
     let onPhaseChange = null;
     let onCharChange = null;
     let onGroupChange = null;
+    let onGroupStart = null;
     let onProgress = null;
     let onComplete = null;
 
@@ -182,6 +183,7 @@ const Koch = (function() {
             pauseAfterGroup = 2500,
             newCharWeight = 0.4,
             reviewLessons = 5,
+            charPauseFactor = 0,
             announceEnabled = true,
             phoneticLang = 'en',
             announceGroups = false,
@@ -270,7 +272,7 @@ const Koch = (function() {
 
                 const group = groups[i];
 
-                // Gruppe initialisieren (leere Anzeige)
+                // Gruppe ankündigen (Fortschritt aktualisieren)
                 if (onGroupChange) onGroupChange([], i + 1, numGroups);
                 if (onProgress) onProgress((i + 1) / numGroups);
 
@@ -279,6 +281,9 @@ const Koch = (function() {
                     await Speaker.speak(`Gruppe ${i + 1}`, 'de');
                     await Morse.wait(500);
                 }
+
+                // Gruppe startet - alte Zeichen ausblenden
+                if (onGroupStart) onGroupStart(i + 1, numGroups);
 
                 // Gruppe abspielen - Zeichen einzeln mit Callback nach Abspielen
                 const timing = Morse.calculateTiming(wpm);
@@ -295,7 +300,9 @@ const Koch = (function() {
 
                     // Pause zwischen Zeichen (außer nach letztem)
                     if (j < group.length - 1) {
-                        await Morse.wait(timing.letterGap);
+                        // Zusätzliche Pause = Faktor * letterGap
+                        const extraPause = charPauseFactor * timing.letterGap;
+                        await Morse.wait(timing.letterGap + extraPause);
                     }
                 }
 
@@ -336,6 +343,7 @@ const Koch = (function() {
         if (callbacks.onPhaseChange) onPhaseChange = callbacks.onPhaseChange;
         if (callbacks.onCharChange) onCharChange = callbacks.onCharChange;
         if (callbacks.onGroupChange) onGroupChange = callbacks.onGroupChange;
+        if (callbacks.onGroupStart) onGroupStart = callbacks.onGroupStart;
         if (callbacks.onProgress) onProgress = callbacks.onProgress;
         if (callbacks.onComplete) onComplete = callbacks.onComplete;
     }
