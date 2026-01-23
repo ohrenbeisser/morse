@@ -36,13 +36,17 @@ const Storage = (function() {
         charPauseFactor: 0,         // Zusätzliche Zeichenpause (Faktor 0-5)
         endless: false,             // Endlos-Modus
         announceGroups: false,      // Gruppen ansagen
+        announceDitDah: false,      // Dit/Dah ansagen bei Zeichenvorstellung
 
         // Erkennen-Einstellungen
         erkennenGroupSize: 5,           // 3-7
         erkennenNumGroups: 10,          // 5-20
         erkennenPauseAfterGroup: 2500,  // ms
         erkennenInstantFeedback: true,  // Sofort-Feedback (Tastatur)
-        erkennenMode: 'keyboard'        // 'keyboard' | 'paper'
+        erkennenMode: 'keyboard',       // 'keyboard' | 'paper'
+
+        // Geben-Einstellungen
+        gebenShowScope: true            // Oszilloskop anzeigen
     };
 
     // Standard-Statistik

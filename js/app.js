@@ -17,6 +17,8 @@ const App = (function() {
     let actionCards;
     let tabs;
     let settingInputs;
+    let dialogElements;
+    let dialogConfirmCallback = null;
 
     // Hören-Seite Elemente
     let hoerenElements;
@@ -109,11 +111,27 @@ const App = (function() {
             charPauseFactor: document.getElementById('settingCharPauseFactor'),
             endless: document.getElementById('settingEndless'),
             announceGroups: document.getElementById('settingAnnounceGroups'),
+            announceDitDah: document.getElementById('settingAnnounceDitDah'),
             // Erkennen-Einstellungen
             erkGroupSize: document.getElementById('settingErkGroupSize'),
             erkNumGroups: document.getElementById('settingErkNumGroups'),
             erkPauseAfterGroup: document.getElementById('settingErkPauseAfterGroup'),
-            erkInstantFeedback: document.getElementById('settingErkInstantFeedback')
+            erkInstantFeedback: document.getElementById('settingErkInstantFeedback'),
+            // Geben-Einstellungen
+            gebenShowScope: document.getElementById('settingGebenShowScope'),
+            // Reset-Buttons
+            btnResetStats: document.getElementById('btnResetStats'),
+            btnResetSettings: document.getElementById('btnResetSettings'),
+            btnClearCache: document.getElementById('btnClearCache')
+        };
+
+        // Dialog-Elemente
+        dialogElements = {
+            overlay: document.getElementById('confirmDialog'),
+            title: document.getElementById('dialogTitle'),
+            message: document.getElementById('dialogMessage'),
+            btnCancel: document.getElementById('dialogCancel'),
+            btnConfirm: document.getElementById('dialogConfirm')
         };
 
         // Hören-Seite Elemente
@@ -389,6 +407,10 @@ const App = (function() {
             Storage.saveSetting('announceGroups', e.target.checked);
         });
 
+        settingInputs.announceDitDah.addEventListener('change', (e) => {
+            Storage.saveSetting('announceDitDah', e.target.checked);
+        });
+
         // Erkennen-Einstellungen
         settingInputs.erkGroupSize.addEventListener('input', (e) => {
             const value = parseInt(e.target.value);
@@ -411,6 +433,109 @@ const App = (function() {
         settingInputs.erkInstantFeedback.addEventListener('change', (e) => {
             Storage.saveSetting('erkennenInstantFeedback', e.target.checked);
         });
+
+        // Geben-Einstellungen
+        settingInputs.gebenShowScope.addEventListener('change', (e) => {
+            Storage.saveSetting('gebenShowScope', e.target.checked);
+            updateGebenScopeVisibility(e.target.checked);
+        });
+
+        // Reset-Buttons
+        settingInputs.btnResetStats.addEventListener('click', () => {
+            showConfirmDialog(
+                'Statistik löschen',
+                'Möchten Sie wirklich alle Statistikdaten löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+                () => {
+                    Storage.resetStats();
+                    updateStatsDisplay();
+                    hideConfirmDialog();
+                }
+            );
+        });
+
+        settingInputs.btnResetSettings.addEventListener('click', () => {
+            showConfirmDialog(
+                'Einstellungen zurücksetzen',
+                'Möchten Sie wirklich alle Einstellungen auf die Standardwerte zurücksetzen?',
+                () => {
+                    Storage.resetAll();
+                    loadSettings();
+                    setDarkMode(false);
+                    hideConfirmDialog();
+                }
+            );
+        });
+
+        settingInputs.btnClearCache.addEventListener('click', () => {
+            showConfirmDialog(
+                'Cache löschen',
+                'Der Offline-Cache wird gelöscht und die Seite neu geladen. Fortfahren?',
+                () => {
+                    hideConfirmDialog();
+                    clearCache();
+                }
+            );
+        });
+
+        // Dialog-Events
+        dialogElements.btnCancel.addEventListener('click', hideConfirmDialog);
+        dialogElements.overlay.addEventListener('click', (e) => {
+            if (e.target === dialogElements.overlay) {
+                hideConfirmDialog();
+            }
+        });
+        dialogElements.btnConfirm.addEventListener('click', () => {
+            if (dialogConfirmCallback) {
+                dialogConfirmCallback();
+            }
+        });
+    }
+
+    /**
+     * Zeigt den Bestätigungsdialog
+     * @param {string} title - Titel des Dialogs
+     * @param {string} message - Nachricht
+     * @param {Function} onConfirm - Callback bei Bestätigung
+     */
+    function showConfirmDialog(title, message, onConfirm) {
+        dialogElements.title.textContent = title;
+        dialogElements.message.textContent = message;
+        dialogConfirmCallback = onConfirm;
+        dialogElements.overlay.classList.add('active');
+    }
+
+    /**
+     * Schließt den Bestätigungsdialog
+     */
+    function hideConfirmDialog() {
+        dialogElements.overlay.classList.remove('active');
+        dialogConfirmCallback = null;
+    }
+
+    /**
+     * Löscht den Service Worker Cache und lädt die Seite neu
+     */
+    function clearCache() {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            // Nachricht an Service Worker senden
+            navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+
+            // Auf Antwort warten und dann neu laden
+            navigator.serviceWorker.addEventListener('message', function handler(event) {
+                if (event.data && event.data.type === 'CACHE_CLEARED') {
+                    navigator.serviceWorker.removeEventListener('message', handler);
+                    window.location.reload(true);
+                }
+            });
+
+            // Fallback: Nach 2 Sekunden trotzdem neu laden
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 2000);
+        } else {
+            // Kein Service Worker - direkt neu laden
+            window.location.reload(true);
+        }
     }
 
     /**
@@ -549,6 +674,7 @@ const App = (function() {
             announceEnabled: settings.announce,
             phoneticLang: settings.phoneticLang,
             announceGroups: settings.announceGroups,
+            announceDitDah: settings.announceDitDah,
             endless: settings.endless
         });
 
@@ -1420,6 +1546,7 @@ const App = (function() {
 
         settingInputs.endless.checked = settings.endless;
         settingInputs.announceGroups.checked = settings.announceGroups;
+        settingInputs.announceDitDah.checked = settings.announceDitDah;
 
         // Erkennen-Einstellungen
         settingInputs.erkGroupSize.value = settings.erkennenGroupSize;
@@ -1432,6 +1559,21 @@ const App = (function() {
         document.getElementById('erkPauseAfterGroupValue').textContent = (settings.erkennenPauseAfterGroup / 1000).toFixed(1);
 
         settingInputs.erkInstantFeedback.checked = settings.erkennenInstantFeedback;
+
+        // Geben-Einstellungen
+        settingInputs.gebenShowScope.checked = settings.gebenShowScope;
+        updateGebenScopeVisibility(settings.gebenShowScope);
+    }
+
+    /**
+     * Aktualisiert die Sichtbarkeit des Oszilloskops auf der Geben-Seite
+     * @param {boolean} visible - Sichtbar oder nicht
+     */
+    function updateGebenScopeVisibility(visible) {
+        const scopeContainer = document.getElementById('gebenScopeContainer');
+        if (scopeContainer) {
+            scopeContainer.style.display = visible ? 'block' : 'none';
+        }
     }
 
     /**

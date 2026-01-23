@@ -47,6 +47,20 @@ const Koch = (function() {
     let onComplete = null;
 
     /**
+     * Wandelt Morse-Code in Dit/Dah-Sprache um
+     * @param {string} char - Das Zeichen
+     * @returns {string} Dit/Dah-Text (z.B. "dittdaah" für A)
+     */
+    function getMorseSpeech(char) {
+        const code = Morse.getCode(char);
+        if (!code) return '';
+
+        return code.split('').map(symbol =>
+            symbol === '.' ? 'ditt' : 'daah'
+        ).join('');
+    }
+
+    /**
      * Gibt eine Lektion zurück
      * @param {number} lessonNumber - Lektionsnummer (1-40)
      * @returns {Object} Lektionsdaten
@@ -187,6 +201,7 @@ const Koch = (function() {
             announceEnabled = true,
             phoneticLang = 'en',
             announceGroups = false,
+            announceDitDah = false,
             endless = false
         } = settings;
 
@@ -208,7 +223,16 @@ const Koch = (function() {
                 if (announceEnabled) {
                     const speech = Phonetic.getForSpeech(char);
                     await Speaker.speak(speech.word, speech.lang);
-                    await Morse.wait(800);
+                    await Morse.wait(500);
+
+                    // Dit/Dah ansagen (optional)
+                    if (announceDitDah) {
+                        const ditDahText = getMorseSpeech(char);
+                        if (ditDahText) {
+                            await Speaker.speak(ditDahText, 'en');
+                            await Morse.wait(500);
+                        }
+                    }
                 }
 
                 if (stopRequested) break;
@@ -244,6 +268,15 @@ const Koch = (function() {
                     const speech = Phonetic.getForSpeech(char);
                     await Speaker.speak(speech.word, speech.lang);
                     await Morse.wait(500);
+
+                    // Dit/Dah ansagen (optional)
+                    if (announceDitDah) {
+                        const ditDahText = getMorseSpeech(char);
+                        if (ditDahText) {
+                            await Speaker.speak(ditDahText, 'en');
+                            await Morse.wait(500);
+                        }
+                    }
                 }
 
                 if (stopRequested) break;

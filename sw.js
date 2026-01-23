@@ -3,7 +3,7 @@
  * Ermöglicht Offline-Funktionalität der PWA
  */
 
-const CACHE_NAME = 'cw-dilettant-v16';
+const CACHE_NAME = 'cw-dilettant-v23';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -120,5 +120,23 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
+    }
+
+    // Cache komplett löschen
+    if (event.data && event.data.type === 'CLEAR_CACHE') {
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    console.log('[ServiceWorker] Clearing cache:', cacheName);
+                    return caches.delete(cacheName);
+                })
+            );
+        }).then(() => {
+            console.log('[ServiceWorker] All caches cleared');
+            // Client informieren
+            if (event.source) {
+                event.source.postMessage({ type: 'CACHE_CLEARED' });
+            }
+        });
     }
 });

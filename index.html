@@ -310,24 +310,11 @@
             <!-- Geben Page -->
             <section class="page" id="page-geben">
                 <div class="page-content">
-                    <!-- Anleitung -->
-                    <div class="card geben-info">
-                        <div class="card-content">
-                            <p><strong>Leertaste</strong> = Morsetaste</p>
-                            <p>Kurz drücken = Dit (.) &nbsp;|&nbsp; Lang drücken = Dah (-)</p>
-                        </div>
-                    </div>
-
-                    <!-- Ton-Toggle -->
-                    <div class="geben-tone-toggle">
-                        <button class="btn btn-icon-toggle active" id="gebenToneToggle" title="Ton ein/aus">
-                            <span class="material-icons">volume_up</span>
-                        </button>
-                    </div>
-
                     <!-- Aktuelle Eingabe -->
                     <div class="geben-display">
-                        <canvas class="geben-scope" id="gebenScope"></canvas>
+                        <div class="geben-scope-container" id="gebenScopeContainer">
+                            <canvas class="geben-scope" id="gebenScope"></canvas>
+                        </div>
                         <div class="geben-sequence" id="gebenSequence"></div>
                         <div class="geben-char" id="gebenChar">-</div>
                     </div>
@@ -358,6 +345,9 @@
                             <span class="material-icons">stop</span>
                             <span>Stop</span>
                         </button>
+                        <button class="btn btn-icon-toggle active" id="gebenToneToggle" title="Ton ein/aus">
+                            <span class="material-icons">volume_up</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -371,6 +361,7 @@
                         <button class="tab" data-tab="tab-cw">CW</button>
                         <button class="tab" data-tab="tab-hoeren">Hören</button>
                         <button class="tab" data-tab="tab-erkennen">Erkennen</button>
+                        <button class="tab" data-tab="tab-geben">Geben</button>
                     </div>
 
                     <!-- Tab: Allgemein -->
@@ -413,6 +404,34 @@
                                     <input type="checkbox" id="settingAnnounce" checked>
                                     <span class="slider"></span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3 class="settings-title">Daten</h3>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Statistik löschen</span>
+                                    <span class="setting-desc">Setzt alle Statistikdaten zurück</span>
+                                </div>
+                                <button class="btn btn-outline btn-danger" id="btnResetStats">Löschen</button>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Einstellungen zurücksetzen</span>
+                                    <span class="setting-desc">Setzt alle Einstellungen auf Standard</span>
+                                </div>
+                                <button class="btn btn-outline btn-danger" id="btnResetSettings">Zurücksetzen</button>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Cache löschen</span>
+                                    <span class="setting-desc">Löscht den Offline-Cache und lädt neu</span>
+                                </div>
+                                <button class="btn btn-outline btn-danger" id="btnClearCache">Cache löschen</button>
                             </div>
                         </div>
                     </div>
@@ -584,6 +603,17 @@
                                     <span class="slider"></span>
                                 </label>
                             </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Dit/Dah ansagen</span>
+                                    <span class="setting-desc">Morse-Elemente bei Zeichenvorstellung</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingAnnounceDitDah">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -627,6 +657,24 @@
                                 </div>
                                 <label class="switch">
                                     <input type="checkbox" id="settingErkInstantFeedback" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Geben -->
+                    <div class="tab-content" id="tab-geben">
+                        <div class="settings-group">
+                            <h3 class="settings-title">Anzeige</h3>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Oszilloskop anzeigen</span>
+                                    <span class="setting-desc">Zeigt die Signalform beim Geben</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingGebenShowScope" checked>
                                     <span class="slider"></span>
                                 </label>
                             </div>
@@ -685,6 +733,22 @@
     </div>
 
     <!-- Scripts -->
+    <!-- Bestätigungsdialog -->
+    <div class="dialog-overlay" id="confirmDialog">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h3 class="dialog-title" id="dialogTitle">Bestätigung</h3>
+            </div>
+            <div class="dialog-content">
+                <p id="dialogMessage">Möchten Sie fortfahren?</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn btn-text" id="dialogCancel">Abbrechen</button>
+                <button class="btn btn-primary" id="dialogConfirm">Bestätigen</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/storage.js"></script>
     <script src="js/phonetic.js"></script>
     <script src="js/morse.js"></script>

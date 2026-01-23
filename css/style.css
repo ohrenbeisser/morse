@@ -89,6 +89,11 @@
     --accent-dark: #FFA000;
     --accent-light: #FFECB3;
 
+    /* Semantic Colors */
+    --error: #D32F2F;
+    --success: #388E3C;
+    --warning: #F57C00;
+
     /* Light Theme (Default) */
     --background: #FAFAFA;
     --surface: #FFFFFF;
@@ -1624,15 +1629,6 @@ h1, h2, h3, h4, h5, h6 {
    Geben Page
    ======================================== */
 
-.geben-info {
-    text-align: center;
-}
-
-.geben-info p {
-    margin: var(--spacing-xs) 0;
-    color: var(--text-secondary);
-}
-
 .geben-display {
     background-color: var(--surface);
     border-radius: var(--radius-lg);
@@ -1646,6 +1642,11 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-md);
+}
+
+.geben-scope-container {
+    width: 100%;
+    margin-bottom: var(--spacing-sm);
 }
 
 .geben-scope {
@@ -1753,12 +1754,6 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
 }
 
-.geben-tone-toggle {
-    display: flex;
-    justify-content: center;
-    margin-bottom: var(--spacing-md);
-}
-
 .btn-icon-toggle {
     width: 56px;
     height: 56px;
@@ -1783,4 +1778,99 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-icon-toggle .material-icons {
     font-size: 28px;
+}
+
+/* Danger Button */
+.btn-outline.btn-danger {
+    border-color: var(--error);
+    color: var(--error);
+}
+
+.btn-outline.btn-danger:hover {
+    background-color: var(--error);
+    border-color: var(--error);
+    color: #fff;
+}
+
+/* Dialog / Modal */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+}
+
+.dialog-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dialog {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-3);
+    min-width: 280px;
+    max-width: 400px;
+    margin: var(--spacing-md);
+    transform: scale(0.9);
+    transition: transform var(--transition-normal);
+}
+
+.dialog-overlay.active .dialog {
+    transform: scale(1);
+}
+
+.dialog-header {
+    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm);
+}
+
+.dialog-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.dialog-content {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+.dialog-content p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.btn-text:hover {
+    background-color: var(--primary-light);
 }
