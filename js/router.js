@@ -103,6 +103,7 @@ const Router = (function() {
             'erkennen': 'Erkennen',
             'geben': 'Geben',
             'einstellungen': 'Einstellungen',
+            'hilfe': 'Hilfe',
             'ueber': 'Über'
         };
 

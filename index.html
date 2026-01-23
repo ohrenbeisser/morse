@@ -74,6 +74,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="#hilfe" class="nav-item" data-page="hilfe">
+                            <span class="material-icons">help</span>
+                            <span>Hilfe</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="#ueber" class="nav-item" data-page="ueber">
                             <span class="material-icons">info</span>
                             <span>Über</span>
@@ -696,6 +702,191 @@
                         </div>
                     </div>
 
+                </div>
+            </section>
+
+            <!-- Hilfe Page -->
+            <section class="page" id="page-hilfe">
+                <div class="page-content">
+                    <div class="help-content">
+
+                        <!-- Einführung -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h2>Willkommen bei CW-Dilettant</h2>
+                                <p>Diese App hilft Ihnen beim Erlernen der Morse-Telegrafie (CW - Continuous Wave) nach der bewährten <strong>Koch-Methode</strong>. Die App ist als Progressive Web App (PWA) konzipiert und funktioniert vollständig offline.</p>
+                            </div>
+                        </div>
+
+                        <!-- Koch-Methode -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h3><span class="material-icons">school</span> Die Koch-Methode</h3>
+                                <p>Die Koch-Methode ist eine effektive Lernmethode für Morse-Telegrafie:</p>
+                                <ul>
+                                    <li><strong>Zeichen mit voller Geschwindigkeit:</strong> Von Anfang an werden Zeichen mit der Zielgeschwindigkeit (z.B. 12 WPM) gegeben</li>
+                                    <li><strong>Schrittweiser Aufbau:</strong> Es beginnt mit nur 2 Zeichen (K und M), dann kommt schrittweise je ein neues Zeichen hinzu</li>
+                                    <li><strong>40 Lektionen:</strong> Insgesamt 40 Lektionen führen Sie durch alle Buchstaben, Zahlen und Sonderzeichen</li>
+                                    <li><strong>Farnsworth-Methode:</strong> Längere Pausen zwischen Zeichen erleichtern das Lernen, ohne die Zeichen selbst zu verlangsamen</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Module -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h3><span class="material-icons">apps</span> Die Module</h3>
+
+                                <h4><span class="material-icons">headphones</span> Hören</h4>
+                                <p>Das Hauptlernmodul nach der Koch-Methode:</p>
+                                <ul>
+                                    <li><strong>Phase 1 - Einführung:</strong> Neue Zeichen werden vorgestellt und mehrfach wiederholt</li>
+                                    <li><strong>Phase 2 - Wiederholung:</strong> Bereits bekannte Zeichen aus den letzten Lektionen werden aufgefrischt</li>
+                                    <li><strong>Phase 3 - Übungsgruppen:</strong> Zufällige Zeichengruppen zum Hören und Mitschreiben</li>
+                                </ul>
+                                <p><strong>Tipp:</strong> Nutzen Sie Papier und Stift, um die gehörten Zeichen mitzuschreiben!</p>
+
+                                <h4><span class="material-icons">quiz</span> Erkennen</h4>
+                                <p>Prüfen Sie Ihr Wissen mit zwei Modi:</p>
+                                <ul>
+                                    <li><strong>Tastatur-Modus:</strong> Tippen Sie die gehörten Zeichen ein und erhalten Sie sofort Feedback</li>
+                                    <li><strong>Papier-Modus:</strong> Schreiben Sie die Zeichen auf Papier und geben Sie am Ende die Fehleranzahl ein</li>
+                                </ul>
+
+                                <h4><span class="material-icons">keyboard</span> Geben</h4>
+                                <p>Üben Sie das Morsen selbst:</p>
+                                <ul>
+                                    <li>Nutzen Sie die <strong>Leertaste</strong> (Desktop) oder den <strong>Touch-Button</strong> (Mobil)</li>
+                                    <li>Kurz drücken = Dit (Punkt), lang drücken = Dah (Strich)</li>
+                                    <li>Das <strong>Oszilloskop</strong> zeigt Ihr Signal visuell an</li>
+                                    <li>Erkannte Zeichen erscheinen automatisch</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Einstellungen -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h3><span class="material-icons">settings</span> Einstellungen im Detail</h3>
+
+                                <h4>Tab: Allgemein</h4>
+                                <ul>
+                                    <li><strong>Dark Mode:</strong> Dunkles Design für angenehmes Lernen bei wenig Licht</li>
+                                </ul>
+
+                                <h4>Tab: CW-Parameter</h4>
+                                <ul>
+                                    <li><strong>Geschwindigkeit (WPM):</strong> 5-40 Words per Minute - die Geschwindigkeit der Morsezeichen selbst (Standard: 12 WPM)</li>
+                                    <li><strong>Effektiv-Geschwindigkeit (WPM):</strong> Farnsworth-Methode - die Zeichen werden mit normaler WPM gegeben, aber die Pausen zwischen Zeichen und Wörtern sind länger. Muss ≤ normale WPM sein.</li>
+                                    <li><strong>Tonhöhe (Hz):</strong> 400-1000 Hz - die Grundfrequenz des Morse-Tons (Standard: 600 Hz)</li>
+                                    <li><strong>Tonhöhen-Offset (Hz):</strong> 0-20 Hz - Dit wird um diesen Wert höher, Dah tiefer abgespielt. Erleichtert die Unterscheidung (Standard: 0 Hz = keine Differenz)</li>
+                                    <li><strong>Zeichensatz:</strong> Wählen Sie, welche Zeichen in Übungen vorkommen (betrifft nur Module außerhalb der Koch-Methode)</li>
+                                </ul>
+
+                                <h4>Tab: Hören</h4>
+                                <p><strong>Wiederholungen:</strong></p>
+                                <ul>
+                                    <li><strong>Mit Pause:</strong> 0-10 - Neue Zeichen werden mit langen Pausen dazwischen wiederholt (Standard: 3)</li>
+                                    <li><strong>Ohne Pause:</strong> 0-10 - Neue Zeichen werden ohne Pause direkt hintereinander gegeben (Standard: 3)</li>
+                                    <li><strong>Pause zwischen Wdh.:</strong> 300-2000 ms - Länge der Pause bei "Mit Pause"</li>
+                                    <li><em>Bei 0:</em> Das neue Zeichen wird nur 1x abgespielt</li>
+                                </ul>
+                                <p><strong>Übungsgruppen:</strong></p>
+                                <ul>
+                                    <li><strong>Gruppengröße:</strong> 3-7 Zeichen pro Gruppe (Standard: 5)</li>
+                                    <li><strong>Anzahl Gruppen:</strong> 5-50 Gruppen pro Durchgang (Standard: 10)</li>
+                                    <li><strong>Pause nach Gruppe:</strong> 1-10 Sekunden zum Mitschreiben</li>
+                                    <li><strong>Gewichtung neues Zeichen:</strong> 20-60% - wie oft das neue Zeichen in Gruppen vorkommt (Standard: 40%)</li>
+                                    <li><strong>Wiederholung letzte Lektionen:</strong> 0-40 - aus wie vielen vorherigen Lektionen Zeichen wiederholt werden (Standard: 6)
+                                        <ul>
+                                            <li><em>Bei 0:</em> Nur das neue Zeichen wird geübt</li>
+                                            <li><em>Bei 6:</em> Zeichen aus den letzten 6 Lektionen kommen vor</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Zusätzliche Zeichenpause:</strong> 0-5 (Faktor) - verlängert die Pausen zwischen Zeichen in Gruppen</li>
+                                </ul>
+                                <p><strong>Weitere Optionen:</strong></p>
+                                <ul>
+                                    <li><strong>Endlos-Modus:</strong> Wiederholt die Lektion automatisch nach Abschluss</li>
+                                    <li><strong>Zeichen ansagen:</strong> Buchstabiert neue Zeichen phonetisch (NATO/Deutsch)</li>
+                                    <li><strong>Dit/Dah ansagen:</strong> Spricht die Morse-Sequenz aus ("ditt-daah" für A)</li>
+                                    <li><strong>Gruppen ansagen:</strong> Sagt Gruppennummer vor jeder Gruppe an</li>
+                                </ul>
+
+                                <h4>Tab: Erkennen</h4>
+                                <ul>
+                                    <li><strong>Gruppengröße:</strong> 3-7 Zeichen (Standard: 5)</li>
+                                    <li><strong>Anzahl Gruppen:</strong> 5-20 Gruppen (Standard: 10)</li>
+                                    <li><strong>Pause nach Gruppe:</strong> 1-10 Sekunden</li>
+                                    <li><strong>Sofort-Feedback:</strong> Im Tastatur-Modus zeigt sofort richtig/falsch an</li>
+                                </ul>
+
+                                <h4>Tab: Geben</h4>
+                                <ul>
+                                    <li><strong>Oszilloskop anzeigen:</strong> Zeigt Ihr Morse-Signal als Rechteckwelle</li>
+                                    <li><strong>Morse-Sequenz anzeigen:</strong> Zeigt Punkte und Striche über dem erkannten Zeichen</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Tipps -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h3><span class="material-icons">tips_and_updates</span> Lerntipps</h3>
+                                <ul>
+                                    <li><strong>Regelmäßigkeit:</strong> Täglich 15-30 Minuten üben ist effektiver als selten lange Sessions</li>
+                                    <li><strong>Geduld:</strong> Bleiben Sie bei einer Lektion, bis Sie 90% Trefferquote erreichen</li>
+                                    <li><strong>Nicht raten:</strong> Hören Sie auf den Klang, nicht auf einzelne Dits und Dahs</li>
+                                    <li><strong>Kopfhörer:</strong> Nutzen Sie Kopfhörer für bessere Konzentration</li>
+                                    <li><strong>Farnsworth:</strong> Starten Sie mit niedriger Effektiv-WPM (z.B. 8) und steigern Sie diese langsam</li>
+                                    <li><strong>Pausen machen:</strong> Bei Ermüdung lieber aufhören und am nächsten Tag weitermachen</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- PWA -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h3><span class="material-icons">install_mobile</span> Installation als App</h3>
+                                <p>Diese App kann auf Ihrem Gerät installiert werden:</p>
+                                <ul>
+                                    <li><strong>Android/Chrome:</strong> Menü → "Zum Startbildschirm hinzufügen"</li>
+                                    <li><strong>iOS/Safari:</strong> Teilen-Button → "Zum Home-Bildschirm"</li>
+                                    <li><strong>Desktop:</strong> Chrome/Edge zeigen ein Installations-Icon in der Adressleiste</li>
+                                </ul>
+                                <p>Nach Installation funktioniert die App vollständig offline und startet wie eine native App!</p>
+                            </div>
+                        </div>
+
+                        <!-- Statistik -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h3><span class="material-icons">analytics</span> Statistiken</h3>
+                                <p>Die Startseite zeigt Ihre Lernfortschritte:</p>
+                                <ul>
+                                    <li><strong>Übungssessions:</strong> Anzahl Ihrer Lerneinheiten</li>
+                                    <li><strong>Trefferquote:</strong> Durchschnittliche Erfolgsrate im Erkennen-Modul</li>
+                                    <li><strong>Gesamtzeichen:</strong> Anzahl erkannter Zeichen</li>
+                                    <li><strong>Übungszeit:</strong> Gesamte Zeit in Lern-Sessions</li>
+                                </ul>
+                                <p><em>Hinweis:</em> Die Statistik kann in den Einstellungen zurückgesetzt werden.</p>
+                            </div>
+                        </div>
+
+                        <!-- Support -->
+                        <div class="card">
+                            <div class="card-content">
+                                <h3><span class="material-icons">help_outline</span> Fragen & Probleme</h3>
+                                <p>Bei Fragen oder technischen Problemen:</p>
+                                <ul>
+                                    <li>E-Mail: <a href="mailto:info@cseifert.de" class="link">info@cseifert.de</a></li>
+                                    <li>Website: <a href="https://www.ohrenbeisser.de" target="_blank" rel="noopener" class="link">www.ohrenbeisser.de</a></li>
+                                </ul>
+                                <p><strong>73 & DX!</strong> (Beste Grüße & gute Verbindungen)</p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </section>
 
