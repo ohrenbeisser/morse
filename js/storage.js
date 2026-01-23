@@ -14,8 +14,10 @@ const Storage = (function() {
         darkMode: false,
 
         // CW-Parameter
-        wpm: 20,
-        frequency: 600,
+        wpm: 12,                    // Geschwindigkeit
+        effWpm: 12,                 // Effektiv-Geschwindigkeit (Farnsworth)
+        frequency: 600,             // Grundfrequenz
+        pitchOffset: 0,             // Tonhöhen-Offset für Dit/Dah (Hz)
         letters: true,
         numbers: true,
         special: false,
@@ -25,14 +27,14 @@ const Storage = (function() {
         announce: true,
 
         // Hören-Einstellungen
-        repetitionsWithPause: 3,    // Wiederholungen mit Pause
-        repetitionsNoPause: 3,      // Wiederholungen ohne Pause
+        repetitionsWithPause: 3,    // Wiederholungen mit Pause (0-10)
+        repetitionsNoPause: 3,      // Wiederholungen ohne Pause (0-10)
         pauseBetweenReps: 800,      // Pause zwischen Wiederholungen (ms)
         groupSize: 5,               // Zeichen pro Gruppe
         numGroups: 10,              // Anzahl Übungsgruppen
         pauseAfterGroup: 2500,      // Pause nach jeder Gruppe (ms)
         newCharWeight: 40,          // Gewichtung neues Zeichen (%)
-        reviewLessons: 5,           // Anzahl Lektionen für Wiederholung (3-10)
+        reviewLessons: 6,           // Anzahl Lektionen für Wiederholung (0-40)
         charPauseFactor: 0,         // Zusätzliche Zeichenpause (Faktor 0-5)
         endless: false,             // Endlos-Modus
         announceGroups: false,      // Gruppen ansagen
@@ -46,7 +48,8 @@ const Storage = (function() {
         erkennenMode: 'keyboard',       // 'keyboard' | 'paper'
 
         // Geben-Einstellungen
-        gebenShowScope: true            // Oszilloskop anzeigen
+        gebenShowScope: true,           // Oszilloskop anzeigen
+        gebenShowSequence: false        // Morse-Sequenz anzeigen
     };
 
     // Standard-Statistik

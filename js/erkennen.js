@@ -119,17 +119,19 @@ const Erkennen = (function() {
         stopRequested = false;
 
         const {
-            wpm = 20,
+            wpm = 12,
+            effWpm = 12,
             frequency = 600,
+            pitchOffset = 0,
             groupSize = 5,
             numGroups = 10,
             pauseAfterGroup = 2500,
             newCharWeight = 0.4,
-            reviewLessons = 5,
+            reviewLessons = 6,
             instantFeedback = true
         } = settings;
 
-        const morseOptions = { wpm, frequency };
+        const morseOptions = { wpm, effWpm, frequency, pitchOffset };
 
         // Zeichen für Wiederholung (aus den letzten X Lektionen)
         const reviewChars = Koch.getReviewChars(currentLesson, reviewLessons);
@@ -278,16 +280,18 @@ const Erkennen = (function() {
         stopRequested = false;
 
         const {
-            wpm = 20,
+            wpm = 12,
+            effWpm = 12,
             frequency = 600,
+            pitchOffset = 0,
             groupSize = 5,
             numGroups = 10,
             pauseAfterGroup = 2500,
             newCharWeight = 0.4,
-            reviewLessons = 5
+            reviewLessons = 6
         } = settings;
 
-        const morseOptions = { wpm, frequency };
+        const morseOptions = { wpm, effWpm, frequency, pitchOffset };
 
         // Zeichen für Wiederholung (aus den letzten X Lektionen)
         const reviewChars = Koch.getReviewChars(currentLesson, reviewLessons);
@@ -401,16 +405,16 @@ const Erkennen = (function() {
     /**
      * Spielt eine einzelne Gruppe ab (Morse-Töne)
      * @param {number} groupIndex - Index der Gruppe
-     * @param {Object} options - Optionen (wpm, frequency)
+     * @param {Object} options - Optionen (wpm, effWpm, frequency, pitchOffset)
      * @returns {Promise}
      */
     async function playGroup(groupIndex, options = {}) {
         if (groupIndex < 0 || groupIndex >= groups.length) return;
 
         const group = groups[groupIndex];
-        const { wpm = 20, frequency = 600 } = options;
-        const morseOptions = { wpm, frequency };
-        const timing = Morse.calculateTiming(wpm);
+        const { wpm = 12, effWpm = 12, frequency = 600, pitchOffset = 0 } = options;
+        const morseOptions = { wpm, effWpm, frequency, pitchOffset };
+        const timing = Morse.calculateTiming(wpm, effWpm);
 
         // Gruppe abspielen
         for (let j = 0; j < group.length; j++) {

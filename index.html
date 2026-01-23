@@ -27,6 +27,9 @@
                 <span class="material-icons">menu</span>
             </button>
             <h1 class="app-bar-title">CW-Dilettant</h1>
+            <button class="icon-button active" id="gebenToneToggle" title="Ton ein/aus" style="display: none;">
+                <span class="material-icons">volume_up</span>
+            </button>
         </header>
 
         <!-- Navigation Drawer (Hamburger Menu) -->
@@ -319,12 +322,6 @@
                         <div class="geben-char" id="gebenChar">-</div>
                     </div>
 
-                    <!-- Touch-Morsetaste -->
-                    <button class="geben-touch-key" id="gebenTouchKey" disabled>
-                        <span class="material-icons">radio_button_checked</span>
-                        <span>Morsetaste</span>
-                    </button>
-
                     <!-- Eingegebener Text -->
                     <div class="geben-output">
                         <div class="geben-output-label">Eingegebener Text:</div>
@@ -335,20 +332,11 @@
                         </button>
                     </div>
 
-                    <!-- Steuerung -->
-                    <div class="controls">
-                        <button class="btn btn-primary btn-large" id="gebenBtnStart">
-                            <span class="material-icons">play_arrow</span>
-                            <span>Start</span>
-                        </button>
-                        <button class="btn btn-secondary btn-large" id="gebenBtnStop" disabled>
-                            <span class="material-icons">stop</span>
-                            <span>Stop</span>
-                        </button>
-                        <button class="btn btn-icon-toggle active" id="gebenToneToggle" title="Ton ein/aus">
-                            <span class="material-icons">volume_up</span>
-                        </button>
-                    </div>
+                    <!-- Touch-Morsetaste -->
+                    <button class="geben-touch-key" id="gebenTouchKey">
+                        <span class="material-icons">radio_button_checked</span>
+                        <span>Morsetaste</span>
+                    </button>
                 </div>
             </section>
 
@@ -444,9 +432,17 @@
                             <div class="setting-item vertical">
                                 <div class="setting-info">
                                     <span class="setting-label">Geschwindigkeit (WPM)</span>
-                                    <span class="setting-value" id="wpmValue">20</span>
+                                    <span class="setting-value" id="wpmValue">12</span>
                                 </div>
-                                <input type="range" class="slider-range" id="settingWpm" min="5" max="40" value="20">
+                                <input type="range" class="slider-range" id="settingWpm" min="5" max="40" value="12">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Effektiv-Geschwindigkeit (WPM)</span>
+                                    <span class="setting-value" id="effWpmValue">12</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingEffWpm" min="5" max="12" value="12">
                             </div>
                         </div>
 
@@ -459,6 +455,14 @@
                                     <span class="setting-value" id="freqValue">600</span>
                                 </div>
                                 <input type="range" class="slider-range" id="settingFreq" min="400" max="1000" step="50" value="600">
+                            </div>
+
+                            <div class="setting-item vertical">
+                                <div class="setting-info">
+                                    <span class="setting-label">Tonhöhen-Offset (Hz)</span>
+                                    <span class="setting-value" id="pitchOffsetValue">0</span>
+                                </div>
+                                <input type="range" class="slider-range" id="settingPitchOffset" min="0" max="20" step="1" value="0">
                             </div>
                         </div>
 
@@ -507,7 +511,7 @@
                                     <span class="setting-label">Mit Pause</span>
                                     <span class="setting-value" id="repsWithPauseValue">3</span>
                                 </div>
-                                <input type="range" class="slider-range" id="settingRepsWithPause" min="1" max="10" value="3">
+                                <input type="range" class="slider-range" id="settingRepsWithPause" min="0" max="10" value="3">
                             </div>
 
                             <div class="setting-item vertical">
@@ -515,7 +519,7 @@
                                     <span class="setting-label">Ohne Pause</span>
                                     <span class="setting-value" id="repsNoPauseValue">3</span>
                                 </div>
-                                <input type="range" class="slider-range" id="settingRepsNoPause" min="1" max="10" value="3">
+                                <input type="range" class="slider-range" id="settingRepsNoPause" min="0" max="10" value="3">
                             </div>
 
                             <div class="setting-item vertical">
@@ -565,9 +569,9 @@
                             <div class="setting-item vertical">
                                 <div class="setting-info">
                                     <span class="setting-label">Wiederholung letzte Lektionen</span>
-                                    <span class="setting-value" id="reviewLessonsValue">5</span>
+                                    <span class="setting-value" id="reviewLessonsValue">6</span>
                                 </div>
-                                <input type="range" class="slider-range" id="settingReviewLessons" min="3" max="10" value="5">
+                                <input type="range" class="slider-range" id="settingReviewLessons" min="0" max="40" value="6">
                             </div>
 
                             <div class="setting-item vertical">
@@ -675,6 +679,17 @@
                                 </div>
                                 <label class="switch">
                                     <input type="checkbox" id="settingGebenShowScope" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Morse-Sequenz anzeigen</span>
+                                    <span class="setting-desc">Zeigt die Punkte und Striche über dem erkannten Buchstaben</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingGebenShowSequence">
                                     <span class="slider"></span>
                                 </label>
                             </div>

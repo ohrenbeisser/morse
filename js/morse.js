@@ -78,20 +78,25 @@ const Morse = (function() {
     }
 
     /**
-     * Berechnet Timing-Werte basierend auf WPM
-     * @param {number} wpm - Words per minute
+     * Berechnet Timing-Werte basierend auf WPM (mit Farnsworth-Unterstützung)
+     * @param {number} wpm - Words per minute (Zeichen-Geschwindigkeit)
+     * @param {number} effWpm - Effektive WPM (Farnsworth, für Pausen)
      * @returns {Object} Timing-Werte in Millisekunden
      */
-    function calculateTiming(wpm) {
+    function calculateTiming(wpm, effWpm = null) {
         // PARIS-Standard: 50 Einheiten pro Wort
         // 1 Einheit = 1200ms / WPM
         const unit = 1200 / wpm;
+
+        // Farnsworth: Pausen mit effWpm berechnen (wenn effWpm < wpm)
+        const pauseUnit = (effWpm && effWpm < wpm) ? (1200 / effWpm) : unit;
+
         return {
-            dit: unit,              // Punkt: 1 Einheit
-            dah: unit * 3,          // Strich: 3 Einheiten
-            symbolGap: unit,        // Pause zwischen Symbolen: 1 Einheit
-            letterGap: unit * 3,    // Pause zwischen Buchstaben: 3 Einheiten
-            wordGap: unit * 7       // Pause zwischen Wörtern: 7 Einheiten
+            dit: unit,                  // Punkt: 1 Einheit (immer mit wpm)
+            dah: unit * 3,              // Strich: 3 Einheiten (immer mit wpm)
+            symbolGap: unit,            // Pause zwischen Symbolen: 1 Einheit (immer mit wpm)
+            letterGap: pauseUnit * 3,   // Pause zwischen Buchstaben: 3 Einheiten (mit effWpm)
+            wordGap: pauseUnit * 7      // Pause zwischen Wörtern: 7 Einheiten (mit effWpm)
         };
     }
 
@@ -167,13 +172,13 @@ const Morse = (function() {
     /**
      * Spielt ein einzelnes Zeichen ab
      * @param {string} char - Das Zeichen
-     * @param {Object} options - Optionen (wpm, frequency)
+     * @param {Object} options - Optionen (wpm, effWpm, frequency, pitchOffset)
      * @returns {Promise}
      */
     async function playChar(char, options = {}) {
-        const { wpm = 20, frequency = 600 } = options;
+        const { wpm = 20, effWpm = null, frequency = 600, pitchOffset = 0 } = options;
         const code = getCode(char);
-        const timing = calculateTiming(wpm);
+        const timing = calculateTiming(wpm, effWpm);
 
         if (!code || stopRequested) return;
 
@@ -183,7 +188,12 @@ const Morse = (function() {
             const symbol = code[i];
             const duration = symbol === '.' ? timing.dit : timing.dah;
 
-            await playTone(frequency, duration);
+            // Tonhöhen-Offset: Dit höher, Dah tiefer
+            const freq = symbol === '.'
+                ? frequency + pitchOffset
+                : frequency - pitchOffset;
+
+            await playTone(freq, duration);
 
             // Pause zwischen Symbolen (außer nach letztem)
             if (i < code.length - 1) {
@@ -214,12 +224,12 @@ const Morse = (function() {
      * Spielt ein Zeichen mehrfach ab OHNE Pause dazwischen
      * @param {string} char - Das Zeichen
      * @param {number} repetitions - Anzahl Wiederholungen
-     * @param {Object} options - Optionen (wpm, frequency)
+     * @param {Object} options - Optionen (wpm, effWpm, frequency, pitchOffset)
      * @returns {Promise}
      */
     async function playCharNoPause(char, repetitions, options = {}) {
-        const { wpm = 20 } = options;
-        const timing = calculateTiming(wpm);
+        const { wpm = 20, effWpm = null } = options;
+        const timing = calculateTiming(wpm, effWpm);
 
         for (let i = 0; i < repetitions; i++) {
             if (stopRequested) break;
@@ -233,12 +243,12 @@ const Morse = (function() {
     /**
      * Spielt eine Gruppe von Zeichen ab
      * @param {string[]} chars - Array von Zeichen
-     * @param {Object} options - Optionen (wpm, frequency)
+     * @param {Object} options - Optionen (wpm, effWpm, frequency, pitchOffset)
      * @returns {Promise}
      */
     async function playGroup(chars, options = {}) {
-        const { wpm = 20 } = options;
-        const timing = calculateTiming(wpm);
+        const { wpm = 20, effWpm = null } = options;
+        const timing = calculateTiming(wpm, effWpm);
 
         for (let i = 0; i < chars.length; i++) {
             if (stopRequested) break;

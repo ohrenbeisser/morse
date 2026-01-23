@@ -187,8 +187,10 @@ const Koch = (function() {
         stopRequested = false;
 
         const {
-            wpm = 20,
+            wpm = 12,
+            effWpm = 12,
             frequency = 600,
+            pitchOffset = 0,
             repetitionsWithPause = 3,
             repetitionsNoPause = 3,
             pauseBetweenReps = 800,
@@ -196,7 +198,7 @@ const Koch = (function() {
             numGroups = 10,
             pauseAfterGroup = 2500,
             newCharWeight = 0.4,
-            reviewLessons = 5,
+            reviewLessons = 6,
             charPauseFactor = 0,
             announceEnabled = true,
             phoneticLang = 'en',
@@ -205,10 +207,13 @@ const Koch = (function() {
             endless = false
         } = settings;
 
-        const morseOptions = { wpm, frequency };
+        const morseOptions = { wpm, effWpm, frequency, pitchOffset };
 
         // Zeichen für Wiederholung (nur aus den letzten X Lektionen)
-        const reviewChars = getReviewChars(currentLesson, reviewLessons);
+        // Bei reviewLessons=0 nur neue Zeichen
+        const reviewChars = reviewLessons > 0
+            ? getReviewChars(currentLesson, reviewLessons)
+            : lesson.newChars;
 
         do {
             // PHASE 1: Neue Zeichen vorstellen
@@ -237,17 +242,24 @@ const Koch = (function() {
 
                 if (stopRequested) break;
 
-                // Mit Pause abspielen
-                await Morse.playCharWithPause(char, repetitionsWithPause, pauseBetweenReps, morseOptions);
+                // Mit Pause abspielen (nur wenn > 0)
+                if (repetitionsWithPause > 0) {
+                    await Morse.playCharWithPause(char, repetitionsWithPause, pauseBetweenReps, morseOptions);
+                    if (stopRequested) break;
+                    await Morse.wait(1000);
+                }
 
-                if (stopRequested) break;
+                // Ohne Pause abspielen (nur wenn > 0)
+                if (repetitionsNoPause > 0) {
+                    await Morse.playCharNoPause(char, repetitionsNoPause, morseOptions);
+                    await Morse.wait(1500);
+                }
 
-                await Morse.wait(1000);
-
-                // Ohne Pause abspielen
-                await Morse.playCharNoPause(char, repetitionsNoPause, morseOptions);
-
-                await Morse.wait(1500);
+                // Wenn beide 0: Nur einmal abspielen
+                if (repetitionsWithPause === 0 && repetitionsNoPause === 0) {
+                    await Morse.playChar(char, morseOptions);
+                    await Morse.wait(1500);
+                }
             }
 
             if (stopRequested) break;
@@ -273,7 +285,7 @@ const Koch = (function() {
                     if (announceDitDah) {
                         const ditDahText = getMorseSpeech(char);
                         if (ditDahText) {
-                            await Speaker.speak(ditDahText, 'en');
+                            await Speaker.speak(ditDahText, 'de');
                             await Morse.wait(500);
                         }
                     }
@@ -318,8 +330,11 @@ const Koch = (function() {
                 // Gruppe startet - alte Zeichen ausblenden
                 if (onGroupStart) onGroupStart(i + 1, numGroups);
 
+                // Kurze Pause nach Fade-out-Animation
+                await Morse.wait(600);
+
                 // Gruppe abspielen - Zeichen einzeln mit Callback nach Abspielen
-                const timing = Morse.calculateTiming(wpm);
+                const timing = Morse.calculateTiming(wpm, effWpm);
                 for (let j = 0; j < group.length; j++) {
                     if (stopRequested) break;
 
@@ -338,6 +353,9 @@ const Koch = (function() {
                         await Morse.wait(timing.letterGap + extraPause);
                     }
                 }
+
+                // Zusätzliche Pause am Ende, damit letztes Zeichen sichtbar bleibt
+                await Morse.wait(500);
 
                 // Pause zwischen Gruppen
                 await Morse.wait(pauseAfterGroup);

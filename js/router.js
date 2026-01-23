@@ -41,6 +41,12 @@ const Router = (function() {
             return;
         }
 
+        // Cleanup-Callback der alten Seite aufrufen, falls vorhanden
+        const oldPage = currentPage;
+        if (oldPage && pageCallbacks[oldPage + '_leave']) {
+            pageCallbacks[oldPage + '_leave']();
+        }
+
         // Alte Seite deaktivieren
         const activePage = document.querySelector('.page.active');
         if (activePage) {

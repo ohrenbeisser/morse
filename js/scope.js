@@ -59,6 +59,8 @@ const Scope = (function() {
         canvas.width = rect.width * dpr;
         canvas.height = rect.height * dpr;
 
+        // Context neu holen nach Größenänderung
+        ctx = canvas.getContext('2d');
         ctx.scale(dpr, dpr);
 
         // Daten-Array anpassen
@@ -73,6 +75,9 @@ const Scope = (function() {
                 dataPoints[destStart + (i - copyStart)] = oldData[i];
             }
         }
+
+        // Sofort zeichnen
+        draw();
     }
 
     /**
@@ -110,6 +115,9 @@ const Scope = (function() {
 
         // Daten zurücksetzen
         dataPoints.fill(0);
+
+        // Initial zeichnen
+        draw();
 
         // Animation starten
         animate();

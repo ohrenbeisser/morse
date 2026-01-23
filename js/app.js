@@ -54,6 +54,10 @@ const App = (function() {
         // Router initialisieren
         Router.init();
 
+        // Router-Callbacks registrieren
+        Router.onPageLoad('geben', initGeben);
+        Router.onPageLoad('geben_leave', cleanupGeben);
+
         // Einstellungen laden und anwenden
         loadSettings();
 
@@ -66,8 +70,8 @@ const App = (function() {
         // Erkennen-Modul initialisieren
         initErkennen();
 
-        // Geben-Modul initialisieren
-        initGeben();
+        // Geben-Modul initialisieren (nur Event-Listener)
+        setupGebenCallbacks();
 
         // Service Worker registrieren
         registerServiceWorker();
@@ -92,7 +96,9 @@ const App = (function() {
             darkMode: document.getElementById('settingDarkMode'),
             // CW-Parameter
             wpm: document.getElementById('settingWpm'),
+            effWpm: document.getElementById('settingEffWpm'),
             frequency: document.getElementById('settingFreq'),
+            pitchOffset: document.getElementById('settingPitchOffset'),
             letters: document.getElementById('settingLetters'),
             numbers: document.getElementById('settingNumbers'),
             special: document.getElementById('settingSpecial'),
@@ -119,6 +125,7 @@ const App = (function() {
             erkInstantFeedback: document.getElementById('settingErkInstantFeedback'),
             // Geben-Einstellungen
             gebenShowScope: document.getElementById('settingGebenShowScope'),
+            gebenShowSequence: document.getElementById('settingGebenShowSequence'),
             // Reset-Buttons
             btnResetStats: document.getElementById('btnResetStats'),
             btnResetSettings: document.getElementById('btnResetSettings'),
@@ -193,8 +200,6 @@ const App = (function() {
             output: document.getElementById('gebenOutput'),
             clearBtn: document.getElementById('gebenClear'),
             toneToggle: document.getElementById('gebenToneToggle'),
-            btnStart: document.getElementById('gebenBtnStart'),
-            btnStop: document.getElementById('gebenBtnStop'),
             scope: document.getElementById('gebenScope'),
             touchKey: document.getElementById('gebenTouchKey')
         };
@@ -312,6 +317,20 @@ const App = (function() {
             const value = parseInt(e.target.value);
             document.getElementById('wpmValue').textContent = value;
             Storage.saveSetting('wpm', value);
+            // EffWpm Max anpassen
+            settingInputs.effWpm.max = value;
+            if (parseInt(settingInputs.effWpm.value) > value) {
+                settingInputs.effWpm.value = value;
+                document.getElementById('effWpmValue').textContent = value;
+                Storage.saveSetting('effWpm', value);
+            }
+        });
+
+        // Effektiv-WPM Slider (Farnsworth)
+        settingInputs.effWpm.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('effWpmValue').textContent = value;
+            Storage.saveSetting('effWpm', value);
         });
 
         // Frequenz Slider
@@ -319,6 +338,13 @@ const App = (function() {
             const value = parseInt(e.target.value);
             document.getElementById('freqValue').textContent = value;
             Storage.saveSetting('frequency', value);
+        });
+
+        // Tonhöhen-Offset Slider
+        settingInputs.pitchOffset.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            document.getElementById('pitchOffsetValue').textContent = value;
+            Storage.saveSetting('pitchOffset', value);
         });
 
         // Zeichensatz Checkboxen
@@ -438,6 +464,11 @@ const App = (function() {
         settingInputs.gebenShowScope.addEventListener('change', (e) => {
             Storage.saveSetting('gebenShowScope', e.target.checked);
             updateGebenScopeVisibility(e.target.checked);
+        });
+
+        settingInputs.gebenShowSequence.addEventListener('change', (e) => {
+            Storage.saveSetting('gebenShowSequence', e.target.checked);
+            updateGebenSequenceVisibility(e.target.checked);
         });
 
         // Reset-Buttons
@@ -661,7 +692,9 @@ const App = (function() {
         // Lektion starten
         await Koch.runLesson({
             wpm: settings.wpm,
+            effWpm: settings.effWpm,
             frequency: settings.frequency,
+            pitchOffset: settings.pitchOffset,
             repetitionsWithPause: settings.repetitionsWithPause,
             repetitionsNoPause: settings.repetitionsNoPause,
             pauseBetweenReps: settings.pauseBetweenReps,
@@ -763,12 +796,12 @@ const App = (function() {
         // Fade-out starten
         groupChars.classList.add('fade-out');
 
-        // Nach der Animation (500ms) Zeichen löschen
+        // Nach der Animation (550ms) Zeichen löschen (etwas länger als CSS-Animation)
         setTimeout(() => {
             currentGroupChars = [];
             groupChars.textContent = '';
             groupChars.classList.remove('fade-out');
-        }, 500);
+        }, 550);
     }
 
     /**
@@ -1011,7 +1044,9 @@ const App = (function() {
 
         const erkSettings = {
             wpm: settings.wpm,
+            effWpm: settings.effWpm,
             frequency: settings.frequency,
+            pitchOffset: settings.pitchOffset,
             groupSize: settings.erkennenGroupSize,
             numGroups: settings.erkennenNumGroups,
             pauseAfterGroup: settings.erkennenPauseAfterGroup,
@@ -1220,21 +1255,27 @@ const App = (function() {
      * Bindet Event Listener für Geben-Seite
      */
     function bindGebenEvents() {
-        if (!gebenElements || !gebenElements.btnStart) {
+        if (!gebenElements || !gebenElements.clearBtn) {
             console.warn('Geben-Elemente nicht gefunden');
             return;
         }
 
-        gebenElements.btnStart.addEventListener('click', startGeben);
-        gebenElements.btnStop.addEventListener('click', stopGeben);
         gebenElements.clearBtn.addEventListener('click', clearGebenOutput);
         gebenElements.toneToggle.addEventListener('click', toggleGebenTone);
+
+        // Globaler Keyboard-Listener für Leertaste (startet Geben bei Bedarf)
+        document.addEventListener('keydown', async (e) => {
+            if (e.code === 'Space' && Router.getCurrentPage() === 'geben') {
+                await startGebenIfNeeded();
+            }
+        });
 
         // Touch-Morsetaste Events
         if (gebenElements.touchKey) {
             // Touch-Events
-            gebenElements.touchKey.addEventListener('touchstart', (e) => {
+            gebenElements.touchKey.addEventListener('touchstart', async (e) => {
                 e.preventDefault();
+                await startGebenIfNeeded();
                 gebenElements.touchKey.classList.add('pressed');
                 Geben.simulateKeyDown();
             });
@@ -1250,8 +1291,9 @@ const App = (function() {
             });
 
             // Mouse-Events (für Desktop-Tests)
-            gebenElements.touchKey.addEventListener('mousedown', (e) => {
+            gebenElements.touchKey.addEventListener('mousedown', async (e) => {
                 e.preventDefault();
+                await startGebenIfNeeded();
                 gebenElements.touchKey.classList.add('pressed');
                 Geben.simulateKeyDown();
             });
@@ -1270,9 +1312,9 @@ const App = (function() {
     }
 
     /**
-     * Initialisiert das Geben-Modul
+     * Setzt Callbacks für das Geben-Modul (einmalig beim App-Start)
      */
-    function initGeben() {
+    function setupGebenCallbacks() {
         if (!gebenElements || !gebenElements.char) {
             console.warn('Geben-Elemente nicht gefunden');
             return;
@@ -1293,13 +1335,16 @@ const App = (function() {
             onKeyUp: () => Scope.setLow()
         });
 
-        console.log('Geben-Modul initialisiert');
+        console.log('Geben-Callbacks initialisiert');
     }
 
     /**
-     * Startet das Geben-Modul
+     * Startet das Geben-Modul (wird beim ersten Tastendruck aufgerufen)
      */
-    async function startGeben() {
+    async function startGebenIfNeeded() {
+        // Nur starten wenn noch nicht aktiv
+        if (Geben.isActive()) return;
+
         const settings = Storage.getSettings();
 
         // Audio-Kontext starten (erfordert User-Interaktion)
@@ -1314,31 +1359,40 @@ const App = (function() {
         // Oszilloskop starten
         Scope.start();
 
-        // UI aktualisieren
-        gebenElements.btnStart.disabled = true;
-        gebenElements.btnStop.disabled = false;
-        gebenElements.touchKey.disabled = false;
-        gebenElements.char.textContent = '-';
-        gebenElements.sequence.textContent = '';
-
         // Wake Lock aktivieren
         await requestWakeLock();
     }
 
     /**
-     * Stoppt das Geben-Modul
+     * Initialisiert UI beim Betreten der Geben-Seite
      */
-    async function stopGeben() {
+    async function initGeben() {
+        // Nur UI initialisieren
+        gebenElements.char.textContent = '-';
+        gebenElements.sequence.textContent = '';
+
+        // Ton-Toggle Button in App-Bar anzeigen
+        if (gebenElements.toneToggle) {
+            gebenElements.toneToggle.style.display = 'block';
+        }
+    }
+
+    /**
+     * Räumt das Geben-Modul auf (wird beim Verlassen der Seite aufgerufen)
+     */
+    async function cleanupGeben() {
         Geben.stop();
 
         // Oszilloskop stoppen
         Scope.stop();
 
-        // UI aktualisieren
-        gebenElements.btnStart.disabled = false;
-        gebenElements.btnStop.disabled = true;
-        gebenElements.touchKey.disabled = true;
+        // Touch-Taste zurücksetzen
         gebenElements.touchKey.classList.remove('pressed');
+
+        // Ton-Toggle Button in App-Bar ausblenden
+        if (gebenElements.toneToggle) {
+            gebenElements.toneToggle.style.display = 'none';
+        }
 
         // Wake Lock freigeben
         await releaseWakeLock();
@@ -1505,8 +1559,15 @@ const App = (function() {
         settingInputs.wpm.value = settings.wpm;
         document.getElementById('wpmValue').textContent = settings.wpm;
 
+        settingInputs.effWpm.value = settings.effWpm;
+        settingInputs.effWpm.max = settings.wpm; // Max = aktuelle WPM
+        document.getElementById('effWpmValue').textContent = settings.effWpm;
+
         settingInputs.frequency.value = settings.frequency;
         document.getElementById('freqValue').textContent = settings.frequency;
+
+        settingInputs.pitchOffset.value = settings.pitchOffset;
+        document.getElementById('pitchOffsetValue').textContent = settings.pitchOffset;
 
         settingInputs.letters.checked = settings.letters;
         settingInputs.numbers.checked = settings.numbers;
@@ -1563,6 +1624,9 @@ const App = (function() {
         // Geben-Einstellungen
         settingInputs.gebenShowScope.checked = settings.gebenShowScope;
         updateGebenScopeVisibility(settings.gebenShowScope);
+
+        settingInputs.gebenShowSequence.checked = settings.gebenShowSequence;
+        updateGebenSequenceVisibility(settings.gebenShowSequence);
     }
 
     /**
@@ -1573,6 +1637,17 @@ const App = (function() {
         const scopeContainer = document.getElementById('gebenScopeContainer');
         if (scopeContainer) {
             scopeContainer.style.display = visible ? 'block' : 'none';
+        }
+    }
+
+    /**
+     * Aktualisiert die Sichtbarkeit der Morse-Sequenz auf der Geben-Seite
+     * @param {boolean} visible - Sichtbar oder nicht
+     */
+    function updateGebenSequenceVisibility(visible) {
+        const sequenceElement = document.getElementById('gebenSequence');
+        if (sequenceElement) {
+            sequenceElement.style.display = visible ? 'block' : 'none';
         }
     }
 
