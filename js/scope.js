@@ -253,7 +253,9 @@ const Scope = (function() {
     }
 
     /**
-     * Aufräumen
+     * Vollständiges Aufräumen - entfernt Event-Listener und gibt Ressourcen frei
+     * Verwenden wenn das Oszilloskop nicht mehr benötigt wird (z.B. Seite verlassen)
+     * Unterschied zu stop(): stop() pausiert nur, destroy() gibt alle Ressourcen frei
      */
     function destroy() {
         stop();

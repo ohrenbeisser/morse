@@ -80,12 +80,16 @@ const Speaker = (function() {
         await loadVoices();
 
         return new Promise((resolve, reject) => {
-            // Vorherige Ausgabe abbrechen
+            // Vorherige Ausgabe abbrechen und kurz warten
+            // Dies verhindert Race Conditions bei schneller Abfolge
             if (synth.speaking) {
                 synth.cancel();
             }
 
-            const utterance = new SpeechSynthesisUtterance(text);
+            // Kleine Verzögerung nach cancel() für Browser-Stabilität
+            // Manche Browser brauchen Zeit um den cancel-State zu verarbeiten
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
             currentUtterance = utterance;
 
             // Stimme setzen
@@ -117,8 +121,9 @@ const Speaker = (function() {
                 resolve(); // Trotzdem resolven um Flow nicht zu unterbrechen
             };
 
-            // Sprechen starten
-            synth.speak(utterance);
+                // Sprechen starten
+                synth.speak(utterance);
+            }, 10); // 10ms Verzögerung nach cancel()
         });
     }
 

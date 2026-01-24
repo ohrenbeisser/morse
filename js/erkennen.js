@@ -200,11 +200,15 @@ const Erkennen = (function() {
 
                 if (stopRequested) break;
 
+                // Eingabe validieren (kann undefined oder leer sein)
+                const cleanInput = (userInput || '').trim();
+
                 // Auswertung
-                const isCorrect = userInput.toUpperCase() === groupString.toUpperCase();
+                const isCorrect = cleanInput.toUpperCase() === groupString.toUpperCase();
+                // Zeichen einzeln vergleichen für detaillierte Statistik
                 let charCorrect = 0;
-                for (let k = 0; k < Math.min(userInput.length, groupString.length); k++) {
-                    if (userInput[k].toUpperCase() === groupString[k].toUpperCase()) {
+                for (let k = 0; k < Math.min(cleanInput.length, groupString.length); k++) {
+                    if (cleanInput[k].toUpperCase() === groupString[k].toUpperCase()) {
                         charCorrect++;
                     }
                 }
@@ -217,14 +221,14 @@ const Erkennen = (function() {
 
                 results.groupResults.push({
                     group: groupString,
-                    input: userInput,
+                    input: cleanInput,
                     correct: isCorrect,
                     charCorrect: charCorrect
                 });
 
                 // Sofort-Feedback
                 if (instantFeedback && callbacks.onGroupEnd) {
-                    callbacks.onGroupEnd(groupString, userInput, isCorrect);
+                    callbacks.onGroupEnd(groupString, cleanInput, isCorrect);
                 }
             }
 

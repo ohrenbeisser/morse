@@ -47,14 +47,22 @@ const Koch = (function() {
     let onComplete = null;
 
     /**
-     * Wandelt Morse-Code in Dit/Dah-Sprache um
-     * @param {string} char - Das Zeichen
-     * @returns {string} Dit/Dah-Text (z.B. "dittdaah" für A)
+     * Wandelt Morse-Code in Dit/Dah-Sprache um für Text-to-Speech
+     * Wird verwendet um Anfängern die Morse-Elemente vorzusprechen
+     *
+     * @param {string} char - Das Zeichen (z.B. 'A')
+     * @returns {string} Dit/Dah-Text für Sprachausgabe (z.B. "dittdaah" für A = .-)
+     *
+     * @example
+     * getMorseSpeech('A') // => "dittdaah" (A = .-)
+     * getMorseSpeech('K') // => "dahhdittdahh" (K = -.-)
      */
     function getMorseSpeech(char) {
         const code = Morse.getCode(char);
         if (!code) return '';
 
+        // Jedes Symbol in gesprochene Form umwandeln
+        // 'ditt' für Punkt (kurz), 'daah' für Strich (lang)
         return code.split('').map(symbol =>
             symbol === '.' ? 'ditt' : 'daah'
         ).join('');

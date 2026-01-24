@@ -54,21 +54,18 @@ const Geben = (function() {
 
     /**
      * Berechnet Timing-Werte basierend auf WPM
+     * Nutzt Morse.calculateTiming() und fügt threshold für Dit/Dah-Unterscheidung hinzu
      * @param {number} wpmValue - Geschwindigkeit in WPM
      * @returns {Object} Timing-Werte in ms
      */
     function calculateTiming(wpmValue) {
-        // PARIS-Standard: 50 Einheiten pro Wort
-        const unitMs = 1200 / wpmValue;
-        return {
-            dit: unitMs,
-            dah: unitMs * 3,
-            elementGap: unitMs,
-            letterGap: unitMs * 3,
-            wordGap: unitMs * 7,
-            // Schwellwert für Dit/Dah-Unterscheidung (2 Einheiten)
-            threshold: unitMs * 2
-        };
+        // Basis-Timing von Morse-Modul holen
+        const timing = Morse.calculateTiming(wpmValue);
+        // Schwellwert für Dit/Dah-Unterscheidung (2 Einheiten = Mitte zwischen Dit und Dah)
+        timing.threshold = timing.dit * 2;
+        // Alias für Kompatibilität
+        timing.elementGap = timing.symbolGap;
+        return timing;
     }
 
     /**

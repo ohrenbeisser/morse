@@ -188,7 +188,9 @@ const Morse = (function() {
             const symbol = code[i];
             const duration = symbol === '.' ? timing.dit : timing.dah;
 
-            // Tonhöhen-Offset: Dit höher, Dah tiefer
+            // Tonhöhen-Offset: Dit höher, Dah tiefer für bessere Unterscheidbarkeit
+            // Dies ist eine Lernhilfe - erfahrene Funker nutzen keinen Offset
+            // Positive Werte: Dit wird höher, Dah tiefer (empfohlen für Anfänger)
             const freq = symbol === '.'
                 ? frequency + pitchOffset
                 : frequency - pitchOffset;

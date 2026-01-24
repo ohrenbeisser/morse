@@ -1,51 +1,90 @@
 /**
  * CW-Dilettant - Main Application
  * Initialisierung und Event-Handling
+ *
+ * Diese Datei ist der zentrale Controller der Anwendung und verbindet:
+ * - UI-Elemente (DOM) mit den Fachmodulen (Koch, Erkennen, Geben, Morse)
+ * - Event-Handling für Navigation, Buttons, Tastatur
+ * - Statistik-Tracking und -Anzeige
+ * - Einstellungsverwaltung
+ *
+ * Abhängigkeiten (müssen vor app.js geladen werden):
+ * - storage.js  : LocalStorage-Verwaltung
+ * - router.js   : SPA-Navigation
+ * - morse.js    : Audio-Generierung
+ * - koch.js     : Koch-Methode Lernlogik
+ * - erkennen.js : Quiz-Modul
+ * - geben.js    : Morse-Eingabe
+ * - scope.js    : Oszilloskop-Visualisierung
+ * - speaker.js  : Text-to-Speech
+ * - phonetic.js : Buchstabiertafeln
+ *
+ * @author Chris Seifert (DL6LG)
  */
 
 const App = (function() {
     'use strict';
 
-    // Wake Lock für Display
+    // ========================================
+    // Zustandsvariablen
+    // ========================================
+
+    /** Wake Lock API Handle - verhindert Display-Abschaltung während Übungen */
     let wakeLock = null;
 
-    // DOM Elements
+    // ----------------------------------------
+    // DOM Element Referenzen (gecached für Performance)
+    // ----------------------------------------
+
+    /** Hamburger-Menü Button */
     let menuBtn;
+    /** Navigation Drawer (Seitenmenü) */
     let navDrawer;
+    /** Overlay hinter dem Drawer */
     let navOverlay;
+    /** Navigation Links */
     let navItems;
+    /** Quick-Action Buttons auf der Startseite */
     let actionCards;
+    /** Tab-Buttons in den Einstellungen */
     let tabs;
+    /** Alle Einstellungs-Inputs */
     let settingInputs;
+    /** Dialog-Elemente für Bestätigungsdialoge */
     let dialogElements;
+    /** Callback für Dialog-Bestätigung */
     let dialogConfirmCallback = null;
 
-    // Hören-Seite Elemente
+    /** DOM-Elemente der Hören-Seite */
     let hoerenElements;
-
-    // Erkennen-Seite Elemente
+    /** DOM-Elemente der Erkennen-Seite */
     let erkennenElements;
-
-    // Geben-Seite Elemente
+    /** DOM-Elemente der Geben-Seite */
     let gebenElements;
 
-    // Geben: Eingegebener Text
+    // ----------------------------------------
+    // Modul-spezifische Zustandsvariablen
+    // ----------------------------------------
+
+    /** Geben: Akkumulierter Text der erkannten Zeichen */
     let gebenOutputText = '';
-
-    // Geben: Ton aktiviert
+    /** Geben: Ist der Ton aktiviert? */
     let gebenToneEnabled = true;
+    /** Geben: Anzahl korrekt erkannter Zeichen in dieser Session */
+    let gebenCharCount = 0;
 
-    // Speicher für aktuelle Gruppenzeichen
+    /** Hören: Aktuelle Zeichen der laufenden Gruppe (für Anzeige) */
     let currentGroupChars = [];
 
-    // Erkennen: Fehleranzahl
+    /** Erkennen: Fehleranzahl im Papier-Modus */
     let erkErrorCount = 0;
 
-    // Zeitmessung für Statistiken
-    let sessionStartTime = null;
+    // ----------------------------------------
+    // Statistik-Tracking
+    // ----------------------------------------
 
-    // Geben: Zeichen-Zähler für aktuelle Session
-    let gebenCharCount = 0;
+    /** Startzeit der aktuellen Übungssession (für Zeitberechnung) */
+    let sessionStartTime = null;
 
     /**
      * Initialisiert die App
