@@ -189,6 +189,18 @@
             <!-- Hören Page -->
             <section class="page" id="page-hoeren">
                 <div class="page-content">
+                    <!-- Modus-Auswahl: Koch vs Zusatz -->
+                    <div class="mode-selector">
+                        <button class="mode-btn active" id="hoerenModeKoch" data-mode="koch">
+                            <span class="material-icons">school</span>
+                            <span>Koch</span>
+                        </button>
+                        <button class="mode-btn" id="hoerenModeZusatz" data-mode="zusatz">
+                            <span class="material-icons">extension</span>
+                            <span>Zusatz</span>
+                        </button>
+                    </div>
+
                     <!-- Lektionsnavigation -->
                     <div class="lesson-nav">
                         <button class="lesson-nav-btn" id="prevLesson" aria-label="Vorherige Lektion">
@@ -998,6 +1010,7 @@
     <script src="js/morse.js"></script>
     <script src="js/speaker.js"></script>
     <script src="js/koch.js"></script>
+    <script src="js/zusatz.js"></script>
     <script src="js/erkennen.js"></script>
     <script src="js/geben.js"></script>
     <script src="js/scope.js"></script>

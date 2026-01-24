@@ -1,0 +1,96 @@
+{
+  "name": "Zusatzlektionen",
+  "description": "Wörter, Abkürzungen und Q-Codes für Fortgeschrittene",
+  "lessons": [
+    {
+      "id": "z1",
+      "name": "Basis-Abkürzungen",
+      "description": "Grundlegende CW-Abkürzungen",
+      "words": ["CQ", "599", "QTH", "QRS"]
+    },
+    {
+      "id": "z2",
+      "name": "Q-Codes Anfrage",
+      "description": "Wichtige Q-Codes als Frage",
+      "words": ["QRL", "QRM", "QRN", "QRO", "QRP", "QRQ", "QRS", "QRT", "QRV", "QRZ"]
+    },
+    {
+      "id": "z3",
+      "name": "Q-Codes Kommunikation",
+      "description": "Q-Codes für QSO-Ablauf",
+      "words": ["QSB", "QSL", "QSO", "QSY", "QTH", "QTR"]
+    },
+    {
+      "id": "z4",
+      "name": "CW-Abkürzungen 1",
+      "description": "Häufige Abkürzungen im QSO",
+      "words": ["DE", "ES", "HR", "HW", "UR", "MY", "NR", "OM", "YL", "XYL"]
+    },
+    {
+      "id": "z5",
+      "name": "CW-Abkürzungen 2",
+      "description": "Weitere häufige Abkürzungen",
+      "words": ["FB", "GA", "GE", "GM", "GN", "GL", "HI", "TNX", "TU", "CUL"]
+    },
+    {
+      "id": "z6",
+      "name": "Rapport & Technik",
+      "description": "RST-Rapport und technische Begriffe",
+      "words": ["RST", "559", "579", "599", "ANT", "RIG", "PWR", "WX"]
+    },
+    {
+      "id": "z7",
+      "name": "QSO-Floskeln",
+      "description": "Typische QSO-Wendungen",
+      "words": ["PSE", "AGN", "CFM", "RPT", "SRI", "NIL", "OK", "RR"]
+    },
+    {
+      "id": "z8",
+      "name": "Zahlengruppen",
+      "description": "Übung mit Zahlen",
+      "words": ["123", "456", "789", "100", "599", "73", "88"]
+    },
+    {
+      "id": "z9",
+      "name": "Rufzeichen-Übung DE",
+      "description": "Deutsche Rufzeichen-Muster",
+      "words": ["DL1", "DL2", "DK3", "DJ4", "DF5", "DO6", "DA0"]
+    },
+    {
+      "id": "z10",
+      "name": "Rufzeichen-Übung Int.",
+      "description": "Internationale Präfixe",
+      "words": ["G3", "F5", "I2", "PA0", "ON4", "OE1", "HB9", "SP5"]
+    },
+    {
+      "id": "z11",
+      "name": "Contest-Kürzel",
+      "description": "Abkürzungen für Conteste",
+      "words": ["TEST", "CQ", "TU", "NR", "AGN", "QSO", "LOG", "DUP"]
+    },
+    {
+      "id": "z12",
+      "name": "Wörter 1",
+      "description": "Einfache englische Wörter",
+      "words": ["THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL"]
+    },
+    {
+      "id": "z13",
+      "name": "Wörter 2",
+      "description": "Weitere einfache Wörter",
+      "words": ["CAN", "HAD", "HER", "WAS", "ONE", "OUR", "OUT", "HAS"]
+    },
+    {
+      "id": "z14",
+      "name": "Prosigns",
+      "description": "Betriebszeichen",
+      "words": ["AR", "AS", "BK", "BT", "CL", "CT", "KN", "SK"]
+    },
+    {
+      "id": "z15",
+      "name": "Gemischte Übung",
+      "description": "Mix aus allem",
+      "words": ["CQ", "DE", "DL6LG", "UR", "RST", "599", "QTH", "73", "TU", "SK"]
+    }
+  ]
+}

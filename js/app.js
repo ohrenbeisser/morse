@@ -75,6 +75,8 @@ const App = (function() {
 
     /** Hören: Aktuelle Zeichen der laufenden Gruppe (für Anzeige) */
     let currentGroupChars = [];
+    /** Hören: Aktueller Modus ('koch' oder 'zusatz') */
+    let hoerenMode = 'koch';
 
     /** Erkennen: Fehleranzahl im Papier-Modus */
     let erkErrorCount = 0;
@@ -188,6 +190,8 @@ const App = (function() {
 
         // Hören-Seite Elemente
         hoerenElements = {
+            modeKoch: document.getElementById('hoerenModeKoch'),
+            modeZusatz: document.getElementById('hoerenModeZusatz'),
             prevLesson: document.getElementById('prevLesson'),
             nextLesson: document.getElementById('nextLesson'),
             lessonNumber: document.getElementById('lessonNumber'),
@@ -618,18 +622,38 @@ const App = (function() {
      * Bindet Event Listener für Hören-Seite
      */
     function bindHoerenEvents() {
+        // Modus-Umschaltung
+        hoerenElements.modeKoch.addEventListener('click', () => {
+            setHoerenMode('koch');
+        });
+        hoerenElements.modeZusatz.addEventListener('click', () => {
+            setHoerenMode('zusatz');
+        });
+
         // Lektion Navigation
         hoerenElements.prevLesson.addEventListener('click', () => {
-            if (Koch.prevLesson()) {
-                updateLessonDisplay();
-                Storage.setKochLesson(Koch.getCurrentLesson().lesson);
+            if (hoerenMode === 'koch') {
+                if (Koch.prevLesson()) {
+                    updateLessonDisplay();
+                    Storage.setKochLesson(Koch.getCurrentLesson().lesson);
+                }
+            } else {
+                if (Zusatz.prevLesson()) {
+                    updateLessonDisplay();
+                }
             }
         });
 
         hoerenElements.nextLesson.addEventListener('click', () => {
-            if (Koch.nextLesson()) {
-                updateLessonDisplay();
-                Storage.setKochLesson(Koch.getCurrentLesson().lesson);
+            if (hoerenMode === 'koch') {
+                if (Koch.nextLesson()) {
+                    updateLessonDisplay();
+                    Storage.setKochLesson(Koch.getCurrentLesson().lesson);
+                }
+            } else {
+                if (Zusatz.nextLesson()) {
+                    updateLessonDisplay();
+                }
             }
         });
 
@@ -639,9 +663,24 @@ const App = (function() {
     }
 
     /**
+     * Setzt den Hören-Modus (koch oder zusatz)
+     * @param {string} mode - 'koch' oder 'zusatz'
+     */
+    function setHoerenMode(mode) {
+        hoerenMode = mode;
+
+        // Buttons aktualisieren
+        hoerenElements.modeKoch.classList.toggle('active', mode === 'koch');
+        hoerenElements.modeZusatz.classList.toggle('active', mode === 'zusatz');
+
+        // Anzeige aktualisieren
+        updateLessonDisplay();
+    }
+
+    /**
      * Initialisiert das Hören-Modul
      */
-    function initHoeren() {
+    async function initHoeren() {
         // Gespeicherte Lektion laden
         const kochData = Storage.getKoch();
         Koch.setCurrentLesson(kochData.currentLesson);
@@ -656,6 +695,16 @@ const App = (function() {
             onComplete: handleComplete
         });
 
+        // Zusatzlektionen laden
+        await Zusatz.load();
+
+        // Callbacks für Zusatz-Modul setzen
+        Zusatz.setCallbacks({
+            onWordChange: handleZusatzWordChange,
+            onProgress: handleProgress,
+            onComplete: handleComplete
+        });
+
         // Initiale Anzeige aktualisieren
         updateLessonDisplay();
     }
@@ -664,19 +713,37 @@ const App = (function() {
      * Aktualisiert die Lektionsanzeige
      */
     function updateLessonDisplay() {
-        const lesson = Koch.getCurrentLesson();
-        if (!lesson) return;
+        if (hoerenMode === 'koch') {
+            const lesson = Koch.getCurrentLesson();
+            if (!lesson) return;
 
-        hoerenElements.lessonNumber.textContent = `Lektion ${lesson.lesson}`;
+            hoerenElements.lessonNumber.textContent = `Lektion ${lesson.lesson}`;
 
-        // Nur die neuen Zeichen dieser Lektion anzeigen (mit Spans für Hervorhebung)
-        hoerenElements.lessonChars.innerHTML = lesson.newChars
-            .map(char => `<span data-char="${char}">${char}</span>`)
-            .join(', ');
+            // Nur die neuen Zeichen dieser Lektion anzeigen (mit Spans für Hervorhebung)
+            hoerenElements.lessonChars.innerHTML = lesson.newChars
+                .map(char => `<span data-char="${char}">${char}</span>`)
+                .join(', ');
 
-        // Navigation Buttons aktivieren/deaktivieren
-        hoerenElements.prevLesson.disabled = lesson.lesson <= 1;
-        hoerenElements.nextLesson.disabled = lesson.lesson >= Koch.getTotalLessons();
+            // Navigation Buttons aktivieren/deaktivieren
+            hoerenElements.prevLesson.disabled = lesson.lesson <= 1;
+            hoerenElements.nextLesson.disabled = lesson.lesson >= Koch.getTotalLessons();
+        } else {
+            // Zusatzlektionen
+            const lesson = Zusatz.getCurrentLesson();
+            if (!lesson) return;
+
+            hoerenElements.lessonNumber.textContent = lesson.id.toUpperCase();
+
+            // Wörter anzeigen
+            hoerenElements.lessonChars.innerHTML = lesson.words
+                .map(word => `<span data-char="${word}">${word}</span>`)
+                .join(', ');
+
+            // Navigation Buttons aktivieren/deaktivieren
+            const currentIndex = Zusatz.getLessons().indexOf(lesson);
+            hoerenElements.prevLesson.disabled = currentIndex <= 0;
+            hoerenElements.nextLesson.disabled = currentIndex >= Zusatz.getTotalLessons() - 1;
+        }
 
         // Zeichen-Display zurücksetzen
         resetCharDisplay();
@@ -724,6 +791,8 @@ const App = (function() {
         hoerenElements.btnStop.disabled = false;
         hoerenElements.prevLesson.disabled = true;
         hoerenElements.nextLesson.disabled = true;
+        hoerenElements.modeKoch.disabled = true;
+        hoerenElements.modeZusatz.disabled = true;
 
         // Zeitmessung starten
         sessionStartTime = Date.now();
@@ -737,31 +806,47 @@ const App = (function() {
         // Morse-Modul starten
         Morse.start();
 
-        // Lektion starten
-        await Koch.runLesson({
-            wpm: settings.wpm,
-            effWpm: settings.effWpm,
-            frequency: settings.frequency,
-            pitchOffset: settings.pitchOffset,
-            repetitionsWithPause: settings.repetitionsWithPause,
-            repetitionsNoPause: settings.repetitionsNoPause,
-            pauseBetweenReps: settings.pauseBetweenReps,
-            groupSize: settings.groupSize,
-            numGroups: settings.numGroups,
-            pauseAfterGroup: settings.pauseAfterGroup,
-            newCharWeight: settings.newCharWeight / 100,
-            reviewLessons: settings.reviewLessons,
-            charPauseFactor: settings.charPauseFactor,
-            announceEnabled: settings.announce,
-            phoneticLang: settings.phoneticLang,
-            announceGroups: settings.announceGroups,
-            announceDitDah: settings.announceDitDah,
-            endless: settings.endless
-        });
+        if (hoerenMode === 'koch') {
+            // Koch-Lektion starten
+            await Koch.runLesson({
+                wpm: settings.wpm,
+                effWpm: settings.effWpm,
+                frequency: settings.frequency,
+                pitchOffset: settings.pitchOffset,
+                repetitionsWithPause: settings.repetitionsWithPause,
+                repetitionsNoPause: settings.repetitionsNoPause,
+                pauseBetweenReps: settings.pauseBetweenReps,
+                groupSize: settings.groupSize,
+                numGroups: settings.numGroups,
+                pauseAfterGroup: settings.pauseAfterGroup,
+                newCharWeight: settings.newCharWeight / 100,
+                reviewLessons: settings.reviewLessons,
+                charPauseFactor: settings.charPauseFactor,
+                announceEnabled: settings.announce,
+                phoneticLang: settings.phoneticLang,
+                announceGroups: settings.announceGroups,
+                announceDitDah: settings.announceDitDah,
+                endless: settings.endless
+            });
+        } else {
+            // Zusatzlektion starten
+            await Zusatz.runLesson({
+                wpm: settings.wpm,
+                effWpm: settings.effWpm,
+                frequency: settings.frequency,
+                pauseBetweenWords: settings.pauseAfterGroup,
+                repetitions: 1,
+                shuffle: false,
+                endless: settings.endless,
+                announceEnabled: settings.announce
+            });
+        }
 
         // Buttons zurücksetzen
         hoerenElements.btnStart.disabled = false;
         hoerenElements.btnStop.disabled = true;
+        hoerenElements.modeKoch.disabled = false;
+        hoerenElements.modeZusatz.disabled = false;
         updateLessonDisplay();
     }
 
@@ -769,7 +854,11 @@ const App = (function() {
      * Stoppt die Hör-Übung
      */
     async function stopHoeren() {
-        Koch.stop();
+        if (hoerenMode === 'koch') {
+            Koch.stop();
+        } else {
+            Zusatz.stop();
+        }
 
         // Wake Lock freigeben
         await releaseWakeLock();
@@ -777,6 +866,8 @@ const App = (function() {
         // Buttons zurücksetzen
         hoerenElements.btnStart.disabled = false;
         hoerenElements.btnStop.disabled = true;
+        hoerenElements.modeKoch.disabled = false;
+        hoerenElements.modeZusatz.disabled = false;
         updateLessonDisplay();
     }
 
@@ -819,6 +910,29 @@ const App = (function() {
         if (type === 'group') {
             addCharToGroupDisplay(char);
         }
+
+        // Animation zurücksetzen nach kurzer Zeit
+        setTimeout(() => {
+            hoerenElements.charDisplay.classList.remove('playing');
+        }, 300);
+    }
+
+    /**
+     * Handler für Wort-Wechsel bei Zusatzlektionen
+     */
+    function handleZusatzWordChange(word, current, total) {
+        // Wort anzeigen
+        hoerenElements.charLetter.textContent = word;
+        hoerenElements.charMorse.textContent = word.split('').map(c => Morse.getCode(c)).join(' ');
+        hoerenElements.charPhonetic.textContent = '';
+        hoerenElements.charDisplay.classList.add('playing');
+
+        // Wort in der Lektion-Card hervorheben
+        highlightLessonChar(word);
+
+        // Fortschrittstext
+        hoerenElements.progressText.textContent = `Wort ${current} / ${total}`;
+        hoerenElements.phaseLabel.textContent = 'Wörter';
 
         // Animation zurücksetzen nach kurzer Zeit
         setTimeout(() => {

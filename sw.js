@@ -3,7 +3,7 @@
  * Ermöglicht Offline-Funktionalität der PWA
  */
 
-const CACHE_NAME = 'cw-dilettant-v23';
+const CACHE_NAME = 'cw-dilettant-v24';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -14,11 +14,13 @@ const ASSETS_TO_CACHE = [
     '/js/router.js',
     '/js/morse.js',
     '/js/koch.js',
+    '/js/zusatz.js',
     '/js/erkennen.js',
     '/js/geben.js',
     '/js/scope.js',
     '/js/phonetic.js',
     '/js/speaker.js',
+    '/data/zusatzlektionen.json',
     '/lib/fonts/MaterialIcons-Regular.woff2',
     '/lib/fonts/roboto-300.woff2',
     '/lib/fonts/roboto-400.woff2',
