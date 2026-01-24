@@ -54,10 +54,38 @@ const Storage = (function() {
 
     // Standard-Statistik
     const defaultStats = {
+        // Gesamt
         sessions: 0,
         correctPercent: 0,
         totalChars: 0,
-        totalTimeMinutes: 0
+        totalTimeMinutes: 0,
+
+        // Pro Modul
+        hoeren: {
+            sessions: 0,
+            timeMinutes: 0,
+            lessonsCompleted: 0
+        },
+        erkennen: {
+            sessions: 0,
+            timeMinutes: 0,
+            totalChars: 0,
+            correctChars: 0,
+            bestPercent: 0
+        },
+        geben: {
+            sessions: 0,
+            timeMinutes: 0,
+            totalChars: 0
+        },
+
+        // Streak-Tracking
+        currentStreak: 0,
+        bestStreak: 0,
+        lastActiveDate: null,
+
+        // Verlauf (letzte 7 Tage für Mini-Chart)
+        history: []  // [{date: 'YYYY-MM-DD', sessions: n, percent: n, chars: n, minutes: n}]
     };
 
     // Standard Koch-Fortschritt
@@ -174,6 +202,91 @@ const Storage = (function() {
     }
 
     /**
+     * Aktualisiert den Streak-Zähler
+     */
+    function updateStreak() {
+        const stats = getStats();
+        const today = new Date().toISOString().split('T')[0];
+
+        if (stats.lastActiveDate === today) {
+            // Bereits heute aktiv gewesen
+            return;
+        }
+
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+        if (stats.lastActiveDate === yesterday) {
+            // Streak fortsetzen
+            stats.currentStreak++;
+        } else if (stats.lastActiveDate !== today) {
+            // Streak zurücksetzen (mehr als 1 Tag Pause)
+            stats.currentStreak = 1;
+        }
+
+        // Best Streak aktualisieren
+        if (stats.currentStreak > stats.bestStreak) {
+            stats.bestStreak = stats.currentStreak;
+        }
+
+        stats.lastActiveDate = today;
+        saveStats(stats);
+    }
+
+    /**
+     * Fügt einen Eintrag zur History hinzu (für Mini-Chart)
+     * @param {Object} entry - {sessions, percent, chars, minutes}
+     */
+    function addHistoryEntry(entry) {
+        const stats = getStats();
+        const today = new Date().toISOString().split('T')[0];
+
+        // Initialisiere history falls nicht vorhanden
+        if (!Array.isArray(stats.history)) {
+            stats.history = [];
+        }
+
+        // Suche heutigen Eintrag
+        const todayIndex = stats.history.findIndex(h => h.date === today);
+
+        if (todayIndex >= 0) {
+            // Heutigen Eintrag aktualisieren
+            const existing = stats.history[todayIndex];
+            stats.history[todayIndex] = {
+                date: today,
+                sessions: (existing.sessions || 0) + (entry.sessions || 0),
+                percent: entry.percent || existing.percent,
+                chars: (existing.chars || 0) + (entry.chars || 0),
+                minutes: (existing.minutes || 0) + (entry.minutes || 0)
+            };
+        } else {
+            // Neuen Eintrag hinzufügen
+            stats.history.push({
+                date: today,
+                sessions: entry.sessions || 0,
+                percent: entry.percent || 0,
+                chars: entry.chars || 0,
+                minutes: entry.minutes || 0
+            });
+        }
+
+        // Nur letzte 7 Tage behalten
+        stats.history = stats.history
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .slice(-7);
+
+        saveStats(stats);
+    }
+
+    /**
+     * Gibt die History der letzten 7 Tage zurück
+     * @returns {Array} History-Einträge
+     */
+    function getHistory() {
+        const stats = getStats();
+        return stats.history || [];
+    }
+
+    /**
      * Lädt den Koch-Fortschritt
      * @returns {Object} Koch-Daten
      */
@@ -267,6 +380,9 @@ const Storage = (function() {
         getStats,
         saveStats,
         updateStat,
+        updateStreak,
+        addHistoryEntry,
+        getHistory,
         getKoch,
         saveKoch,
         setKochLesson,

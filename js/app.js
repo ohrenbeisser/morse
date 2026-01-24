@@ -41,6 +41,12 @@ const App = (function() {
     // Erkennen: Fehleranzahl
     let erkErrorCount = 0;
 
+    // Zeitmessung für Statistiken
+    let sessionStartTime = null;
+
+    // Geben: Zeichen-Zähler für aktuelle Session
+    let gebenCharCount = 0;
+
     /**
      * Initialisiert die App
      */
@@ -680,6 +686,9 @@ const App = (function() {
         hoerenElements.prevLesson.disabled = true;
         hoerenElements.nextLesson.disabled = true;
 
+        // Zeitmessung starten
+        sessionStartTime = Date.now();
+
         // Wake Lock aktivieren (verhindert Bildschirm-Abschaltung)
         await requestWakeLock();
 
@@ -830,10 +839,30 @@ const App = (function() {
         // Wake Lock freigeben
         await releaseWakeLock();
 
+        // Übungszeit berechnen
+        const sessionMinutes = sessionStartTime
+            ? Math.round((Date.now() - sessionStartTime) / 60000)
+            : 0;
+        sessionStartTime = null;
+
         // Statistik aktualisieren
         const stats = Storage.getStats();
         stats.sessions++;
+        stats.totalTimeMinutes += sessionMinutes;
+
+        // Hören-spezifische Statistik
+        if (!stats.hoeren) stats.hoeren = { sessions: 0, timeMinutes: 0, lessonsCompleted: 0 };
+        stats.hoeren.sessions++;
+        stats.hoeren.timeMinutes += sessionMinutes;
+        stats.hoeren.lessonsCompleted++;
+
         Storage.saveStats(stats);
+
+        // Streak und History aktualisieren
+        Storage.updateStreak();
+        Storage.addHistoryEntry({ sessions: 1, minutes: sessionMinutes });
+
+        updateStatsDisplay();
     }
 
     // ========================================
@@ -1032,6 +1061,9 @@ const App = (function() {
         erkennenElements.nextLesson.disabled = true;
         erkennenElements.modeKeyboard.disabled = true;
         erkennenElements.modePaper.disabled = true;
+
+        // Zeitmessung starten
+        sessionStartTime = Date.now();
 
         // Wake Lock aktivieren
         await requestWakeLock();
@@ -1350,6 +1382,10 @@ const App = (function() {
         // Audio-Kontext starten (erfordert User-Interaktion)
         Morse.start();
 
+        // Zeitmessung und Zeichenzähler starten
+        sessionStartTime = Date.now();
+        gebenCharCount = 0;
+
         Geben.start({
             wpm: settings.wpm,
             frequency: settings.frequency,
@@ -1381,6 +1417,13 @@ const App = (function() {
      * Räumt das Geben-Modul auf (wird beim Verlassen der Seite aufgerufen)
      */
     async function cleanupGeben() {
+        // Statistik speichern falls Zeichen eingegeben wurden
+        if (sessionStartTime && gebenCharCount > 0) {
+            saveGebenStats();
+        }
+        sessionStartTime = null;
+        gebenCharCount = 0;
+
         Geben.stop();
 
         // Oszilloskop stoppen
@@ -1396,6 +1439,39 @@ const App = (function() {
 
         // Wake Lock freigeben
         await releaseWakeLock();
+    }
+
+    /**
+     * Speichert die Geben-Statistik
+     */
+    function saveGebenStats() {
+        // Übungszeit berechnen
+        const sessionMinutes = sessionStartTime
+            ? Math.round((Date.now() - sessionStartTime) / 60000)
+            : 0;
+
+        const stats = Storage.getStats();
+        stats.sessions++;
+        stats.totalChars += gebenCharCount;
+        stats.totalTimeMinutes += sessionMinutes;
+
+        // Geben-spezifische Statistik
+        if (!stats.geben) stats.geben = { sessions: 0, timeMinutes: 0, totalChars: 0 };
+        stats.geben.sessions++;
+        stats.geben.timeMinutes += sessionMinutes;
+        stats.geben.totalChars += gebenCharCount;
+
+        Storage.saveStats(stats);
+
+        // Streak und History aktualisieren
+        Storage.updateStreak();
+        Storage.addHistoryEntry({
+            sessions: 1,
+            chars: gebenCharCount,
+            minutes: sessionMinutes
+        });
+
+        updateStatsDisplay();
     }
 
     /**
@@ -1447,6 +1523,11 @@ const App = (function() {
         gebenElements.char.textContent = char;
         gebenOutputText += char;
         gebenElements.output.textContent = gebenOutputText;
+
+        // Zeichen für Statistik zählen (nur gültige Zeichen, kein '?')
+        if (char !== '?') {
+            gebenCharCount++;
+        }
     }
 
     /**
@@ -1469,9 +1550,16 @@ const App = (function() {
      * @param {Object} results - Ergebnisse
      */
     function saveErkStats(results) {
+        // Übungszeit berechnen
+        const sessionMinutes = sessionStartTime
+            ? Math.round((Date.now() - sessionStartTime) / 60000)
+            : 0;
+        sessionStartTime = null;
+
         const stats = Storage.getStats();
         stats.sessions++;
         stats.totalChars += results.totalChars || 0;
+        stats.totalTimeMinutes += sessionMinutes;
 
         // Durchschnittliche Trefferquote aktualisieren
         const correctPercent = results.correctPercent ||
@@ -1486,7 +1574,27 @@ const App = (function() {
             );
         }
 
+        // Erkennen-spezifische Statistik
+        if (!stats.erkennen) stats.erkennen = { sessions: 0, timeMinutes: 0, totalChars: 0, correctChars: 0, bestPercent: 0 };
+        stats.erkennen.sessions++;
+        stats.erkennen.timeMinutes += sessionMinutes;
+        stats.erkennen.totalChars += results.totalChars || 0;
+        stats.erkennen.correctChars += results.correctChars || 0;
+        if (correctPercent > stats.erkennen.bestPercent) {
+            stats.erkennen.bestPercent = correctPercent;
+        }
+
         Storage.saveStats(stats);
+
+        // Streak und History aktualisieren
+        Storage.updateStreak();
+        Storage.addHistoryEntry({
+            sessions: 1,
+            percent: correctPercent,
+            chars: results.totalChars || 0,
+            minutes: sessionMinutes
+        });
+
         updateStatsDisplay();
     }
 
@@ -1656,16 +1764,104 @@ const App = (function() {
      */
     function updateStatsDisplay() {
         const stats = Storage.getStats();
+        const koch = Storage.getKoch();
 
-        document.getElementById('statSessions').textContent = stats.sessions;
+        // Hauptstatistiken
+        document.getElementById('statSessions').textContent = formatNumber(stats.sessions);
         document.getElementById('statCorrect').textContent = stats.correctPercent + '%';
-        document.getElementById('statChars').textContent = stats.totalChars;
+        document.getElementById('statChars').textContent = formatNumber(stats.totalChars);
 
         // Zeit formatieren
         const hours = Math.floor(stats.totalTimeMinutes / 60);
         const minutes = stats.totalTimeMinutes % 60;
         const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
         document.getElementById('statTime').textContent = timeStr || '0m';
+
+        // Streak anzeigen
+        const streakContainer = document.getElementById('statStreakContainer');
+        const streakValue = document.getElementById('statStreak');
+        if (streakContainer && streakValue) {
+            const streak = stats.currentStreak || 0;
+            streakValue.textContent = streak;
+            if (streak === 0) {
+                streakContainer.classList.add('inactive');
+            } else {
+                streakContainer.classList.remove('inactive');
+            }
+        }
+
+        // Koch-Fortschritt
+        const currentLesson = koch.currentLesson || 1;
+        const kochProgressText = document.getElementById('statKochProgress');
+        const kochProgressBar = document.getElementById('statKochProgressBar');
+        if (kochProgressText) {
+            kochProgressText.textContent = `${currentLesson}/40`;
+        }
+        if (kochProgressBar) {
+            const percent = (currentLesson / 40) * 100;
+            kochProgressBar.style.width = percent + '%';
+        }
+
+        // Mini-Chart aktualisieren
+        updateMiniChart(stats.history || []);
+    }
+
+    /**
+     * Formatiert große Zahlen (1000 -> 1k)
+     */
+    function formatNumber(num) {
+        if (num >= 10000) {
+            return (num / 1000).toFixed(1) + 'k';
+        }
+        return num.toString();
+    }
+
+    /**
+     * Aktualisiert das Mini-Chart mit den letzten 7 Tagen
+     */
+    function updateMiniChart(history) {
+        const chartContainer = document.getElementById('miniChart');
+        if (!chartContainer) return;
+
+        // Letzte 7 Tage berechnen
+        const days = [];
+        const dayNames = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(Date.now() - i * 86400000);
+            const dateStr = date.toISOString().split('T')[0];
+            const dayName = dayNames[date.getDay()];
+            const entry = history.find(h => h.date === dateStr);
+            days.push({
+                date: dateStr,
+                dayName: dayName,
+                sessions: entry ? entry.sessions : 0
+            });
+        }
+
+        // Maximale Sessions für Skalierung
+        const maxSessions = Math.max(...days.map(d => d.sessions), 1);
+
+        // Bars aktualisieren
+        const bars = chartContainer.querySelectorAll('.chart-bar');
+        bars.forEach((bar, index) => {
+            if (index < days.length) {
+                const day = days[index];
+                const fill = bar.querySelector('.bar-fill');
+                const label = bar.querySelector('.bar-label');
+
+                if (fill) {
+                    const height = day.sessions > 0
+                        ? Math.max(10, (day.sessions / maxSessions) * 100)
+                        : 0;
+                    fill.style.height = height + '%';
+                    fill.classList.toggle('empty', day.sessions === 0);
+                }
+                if (label) {
+                    label.textContent = day.dayName;
+                }
+            }
+        });
     }
 
     /**

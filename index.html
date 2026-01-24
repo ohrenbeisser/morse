@@ -98,52 +98,90 @@
             <!-- Home Page -->
             <section class="page active" id="page-home">
                 <div class="page-content">
-                    <!-- Statistik Card -->
-                    <div class="card stats-card">
-                        <div class="card-header">
-                            <span class="material-icons">bar_chart</span>
-                            <h2>Statistik</h2>
-                        </div>
-                        <div class="card-content">
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <span class="stat-value" id="statSessions">0</span>
-                                    <span class="stat-label">Übungen</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-value" id="statCorrect">0%</span>
-                                    <span class="stat-label">Richtig</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-value" id="statChars">0</span>
-                                    <span class="stat-label">Zeichen</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-value" id="statTime">0h</span>
-                                    <span class="stat-label">Übungszeit</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Actions -->
-                    <h3 class="section-title">Übungen</h3>
+                    <!-- Quick Actions (oben) -->
                     <div class="action-buttons">
                         <button class="action-card" data-navigate="hoeren">
-                            <span class="material-icons">headphones</span>
+                            <div class="action-icon-wrapper action-icon-hoeren">
+                                <span class="material-icons">headphones</span>
+                            </div>
                             <span class="action-title">Hören</span>
                             <span class="action-desc">Morse-Zeichen hören und lernen</span>
                         </button>
                         <button class="action-card" data-navigate="erkennen">
-                            <span class="material-icons">quiz</span>
+                            <div class="action-icon-wrapper action-icon-erkennen">
+                                <span class="material-icons">quiz</span>
+                            </div>
                             <span class="action-title">Erkennen</span>
                             <span class="action-desc">Gehörtes identifizieren</span>
                         </button>
                         <button class="action-card" data-navigate="geben">
-                            <span class="material-icons">keyboard</span>
+                            <div class="action-icon-wrapper action-icon-geben">
+                                <span class="material-icons">keyboard</span>
+                            </div>
                             <span class="action-title">Geben</span>
                             <span class="action-desc">Selbst morsen üben</span>
                         </button>
+                    </div>
+
+                    <!-- Statistik (unten) -->
+                    <div class="stats-section">
+                        <!-- Streak & Fortschritt Header -->
+                        <div class="stats-header">
+                            <div class="stat-streak" id="statStreakContainer">
+                                <span class="material-icons streak-icon">local_fire_department</span>
+                                <span class="streak-value" id="statStreak">0</span>
+                                <span class="streak-label">Tage</span>
+                            </div>
+                            <div class="stat-progress">
+                                <div class="progress-label">
+                                    <span>Koch-Methode</span>
+                                    <span id="statKochProgress">1/40</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="statKochProgressBar" style="width: 2.5%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hauptstatistiken als kompakte Zeile -->
+                        <div class="stats-row">
+                            <div class="stat-compact">
+                                <span class="stat-compact-value" id="statSessions">0</span>
+                                <span class="stat-compact-label">Übungen</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-compact">
+                                <span class="stat-compact-value" id="statCorrect">0%</span>
+                                <span class="stat-compact-label">Richtig</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-compact">
+                                <span class="stat-compact-value" id="statChars">0</span>
+                                <span class="stat-compact-label">Zeichen</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-compact">
+                                <span class="stat-compact-value" id="statTime">0m</span>
+                                <span class="stat-compact-label">Zeit</span>
+                            </div>
+                        </div>
+
+                        <!-- Mini-Chart (letzte 7 Tage) -->
+                        <div class="stats-chart" id="statsChartContainer">
+                            <div class="chart-header">
+                                <span class="chart-label">Aktivität</span>
+                                <span class="chart-period">Letzte 7 Tage</span>
+                            </div>
+                            <div class="mini-chart" id="miniChart">
+                                <div class="chart-bar" data-day="0"><div class="bar-fill"></div><span class="bar-label">Mo</span></div>
+                                <div class="chart-bar" data-day="1"><div class="bar-fill"></div><span class="bar-label">Di</span></div>
+                                <div class="chart-bar" data-day="2"><div class="bar-fill"></div><span class="bar-label">Mi</span></div>
+                                <div class="chart-bar" data-day="3"><div class="bar-fill"></div><span class="bar-label">Do</span></div>
+                                <div class="chart-bar" data-day="4"><div class="bar-fill"></div><span class="bar-label">Fr</span></div>
+                                <div class="chart-bar" data-day="5"><div class="bar-fill"></div><span class="bar-label">Sa</span></div>
+                                <div class="chart-bar" data-day="6"><div class="bar-fill"></div><span class="bar-label">So</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
