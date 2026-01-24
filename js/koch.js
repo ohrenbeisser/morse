@@ -51,20 +51,20 @@ const Koch = (function() {
      * Wird verwendet um Anfängern die Morse-Elemente vorzusprechen
      *
      * @param {string} char - Das Zeichen (z.B. 'A')
-     * @returns {string} Dit/Dah-Text für Sprachausgabe (z.B. "dittdaah" für A = .-)
+     * @returns {string} Dit/Dah-Text für Sprachausgabe (z.B. "dittdah" für A = .-)
      *
      * @example
-     * getMorseSpeech('A') // => "dittdaah" (A = .-)
-     * getMorseSpeech('K') // => "dahhdittdahh" (K = -.-)
+     * getMorseSpeech('A') // => "dittdah" (A = .-)
+     * getMorseSpeech('K') // => "dahdittdah" (K = -.-)
      */
     function getMorseSpeech(char) {
         const code = Morse.getCode(char);
         if (!code) return '';
 
         // Jedes Symbol in gesprochene Form umwandeln
-        // 'ditt' für Punkt (kurz), 'daah' für Strich (lang)
+        // 'ditt' für Punkt (kurz), 'dah' für Strich (lang)
         return code.split('').map(symbol =>
-            symbol === '.' ? 'ditt' : 'daah'
+            symbol === '.' ? 'ditt' : 'dah'
         ).join('');
     }
 
